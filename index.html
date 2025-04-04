@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <link rel="icon" href="favicon.ico.png.jpg" type="image/x-icon">
+    <title>MindEase - AI Chat</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1 class="glow">MindEase</h1>
+        <nav>
+            <ul>
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#meditation" class="nav-link">Meditation</a></li>
+                <li><a href="#about" class="nav-link">About Us</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Home Page -->
+    <div id="home" class="page">
+        <main>
+            <!-- Hero Section -->
+            <section class="hero">
+                <div class="hero-container">
+                    <div class="hero-text">
+                        <h2>Your Free Personal AI Therapist</h2>
+                        <p>Measure & improve your mental health in real time with your personal AI chatbot. No sign-up required. Available 24/7. Daily insights just for you!</p>
+                    </div>
+                    <div class="hero-image">
+                        <img src="assets/chatbot.jpg" alt="AI Chatbot">
+                        <a href="#chatbot" class="chat-button">Chat With Rahat</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section class="features">
+                <div class="feature">
+                    <img src="assets/ai-powered.png" alt="AI Powered">
+                    <h3>AI Powered</h3>
+                    <p>Auto-detect your mental state, get immediate feedback, and chat with MindEase AI.</p>
+                </div>
+                <div class="feature">
+                    <img src="assets/effortless.png" alt="Effortless">
+                    <h3>Effortless</h3>
+                    <p>Quick check-ins and a seamless user experience.</p>
+                </div>
+                <div class="feature">
+                    <img src="assets/private.png" alt="Radically Private">
+                    <h3>Radically Private</h3>
+                    <p>No registration, no personal data collection, and ad-free AI therapy.</p>
+                </div>
+            </section>
+
+            <!-- How It Works Section -->
+            <section class="how-it-works">
+                <h2>How MindEase Works</h2>
+                <div class="steps">
+                    <div class="step">
+                        <img src="assets/img1.jpg" alt="AI-powered tracking">
+                        <h3>AI-Powered Tracking</h3>
+                        <p>Understand your emotional health in real time and receive suggestions to improve.</p>
+                    </div>
+                    <div class="step">
+                        <img src="assets/img2.jpg" alt="Real-time conversations">
+                        <h3>Real-Time Conversations</h3>
+                        <p>Interact with your AI therapist for real-time support tailored to your needs.</p>
+                    </div>
+                    <div class="step">
+                        <img src="assets/img3.jpg" alt="Meditation self-care">
+                        <h3>Guided Self-Care</h3>
+                        <p>Access meditation, relaxation, and breathing exercises for better mental well-being.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Meditation Page -->
+    <div id="meditation" class="page" style="display:none;">
+        <main>
+            <h2 class="fade-in">Guided Meditation Sessions</h2>
+            <p>Relax your mind with our AI-powered meditation techniques.</p>
+
+            <!-- Meditation Timer -->
+            <div class="timer-container">
+                <h3>5-Minute Relaxation Timer</h3>
+                <div id="timer">05:00</div>
+                <button id="start-timer">Start</button>
+                <button id="pause-timer">Pause</button>
+                <button id="reset-timer">Reset</button>
+            </div>
+
+            <!-- Sound Selection -->
+            <div class="sound-container">
+                <h3>Background Sounds</h3>
+                <button onclick="playSound('ocean')">🌊 Ocean</button>
+                <button onclick="playSound('rain')">🌧️ Rain</button>
+                <button onclick="playSound('birds')">🐦 Birds</button>
+                <button onclick="stopSound()">🔇 Stop</button>
+            </div>
+        </main>
+    </div>
+
+
+
+        <!-- Chatbot Page -->
+<div id="chatbot" class="page" style="display:none;">
+    <main>
+        <section id="home" class="fade-in">
+            <h2>Welcome to MindEase</h2>
+            <p>Get mental health support through our AI-powered chatbot.</p>
+        </section>
+
+        <!-- Chatbot Section -->
+<section id="chat-section">
+    <h3 class="glow">Chat with MindEase</h3>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+
+        <!-- Chat Input & Send Button -->
+        <div class="input-area">
+            <input type="text" id="chat-input" placeholder="Type your message...">
+            <button id="send-button" class="send-btn">Send</button>
+        </div>
+    </div>
+</section>
+
+<script src="chart.js"></script>
+        <!-- Emotion Recognition Section -->
+        <section id="emotion-section">
+            <h3 class="glow">Real-Time Emotion Analysis</h3>
+            <p>Turn on your camera to analyze your emotions and receive personalized responses.</p>
+            
+            <!-- Video and Canvas Elements -->
+            <video id="video" width="320" height="240" autoplay style="display: none;"></video>
+            <canvas id="canvas" style="display: none;"></canvas>
+            
+            <!-- Buttons for Start and End Camera -->
+            <button id="start-camera">Start Camera</button>
+            <button id="end-camera" style="display: block;">End Camera</button>
+            
+            <!-- Emotion Results -->
+            <p>Detected Emotion: <span id="emotion-result">Not started</span></p>
+            <div id="mood-tracking">
+                <p>Happy: <span id="happy-percentage">0%</span></p>
+                <p>Sad: <span id="sad-percentage">0%</span></p>
+                <p>Angry: <span id="angry-percentage">0%</span></p>
+            </div>
+        </section>
+        </main>
+        </div>
+            </main>
+        </div>
+
+
+
+
+
+    <!-- About Page -->
+    <div id="about" class="page" style="display:none;">
+        <main>
+            <section class="fade-in">
+                <h2>Our Mission</h2>
+                <p>
+                    At <strong>MindEase</strong>, we are committed to promoting mental well-being through AI-driven solutions. 
+                    Our goal is to make mental health support accessible, intuitive, and effective for everyone.
+                </p>
+            </section>
+
+            <section class="team-section fade-in">
+                <h2>Meet Our Team</h2>
+                <p>We are a passionate team of four individuals dedicated to enhancing mental wellness through technology.</p>
+                
+                <div class="team-members">
+                    <div class="team-card">
+                        <h3>Sandeep Kumar Behera</h3>
+                        <p>Creator</p>
+                        <p>Responsible for building seamless web experiences.</p>
+                    </div>
+
+                    <div class="team-card">
+                        <h3>Jatin Kumar Behera</h3>
+                        <p>AI Specialist</p>
+                        <p>Expert in AI-driven mental health solutions</p>
+                    </div>
+
+                    <div class="team-card">
+                        <h3>Badal Singh</h3>
+                        <p>UX/UI Designer</p>
+                        <p>Creates user-friendly and aesthetically pleasing interfaces.</p>
+                    </div>
+
+                    <div class="team-card">
+                        <h3>Girish Sahoo</h3>
+                        <p>Testing Expert</p>
+                        <p>Ensures smooth execution of MindEase’s vision.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+        </div>
+        <p>© 2025 MindEase. All rights reserved. Made with ❤️ for Mental Well-being</p>
+    </footer>
+
+    <script>
+        // JavaScript to handle page navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.page').forEach(page => {
+                    page.style.display = 'none';
+                });
+                document.querySelector(this.getAttribute('href')).style.display = 'block';
+            });
+        });
+
+        // Show the home page by default
+        document.querySelector('#home').style.display = 'block';
+    </script>
+</body>
+</html>

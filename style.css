@@ -1,0 +1,535 @@
+/* Combined CSS File - styles.css */
+
+/* ================= General Styles ================= */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #0a0f24;
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    text-align: center;
+}
+
+/* ================= Header ================= */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: linear-gradient(45deg, #141e30, #243b55);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+h1.glow {
+    font-size: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #ffffff;
+    text-shadow: 0 0 10px #00ffea, 0 0 20px #00ffea, 0 0 40px #00ffea;
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px #00ffea, 0 0 20px #00ffea;
+    }
+    to {
+        text-shadow: 0 0 20px #00ffea, 0 0 30px #00ffea;
+    }
+}
+
+/* ================= Navigation ================= */
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+}
+
+nav ul li {
+    margin: 0 18px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 1rem;
+    transition: 0.3s;
+    position: relative;
+}
+
+.nav-link:hover {
+    color: #00ffea;
+}
+
+.nav-link::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 2px;
+    background: #00ffea;
+    transition: width 0.3s;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+.nav-link.active {
+    font-weight: bold;
+    color: #ff6600; /* Change color for active link */
+    text-decoration: underline;
+}
+
+
+/* ================= Hero Section ================= */
+.hero {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 10px;
+    color: white;
+    text-align: left;
+}
+
+.hero-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1000px;
+    width: 100%;
+}
+
+.hero-text {
+    flex: 1;
+    padding-right: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0, 255, 234, 0.3);
+    animation: fadeIn 1.5s ease-in-out;
+}
+
+.hero-text h2 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    color: #00ffea;
+}
+
+.hero-text p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+
+.hero-image {
+    flex: 0 0 300px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 0 30px rgba(0, 255, 234, 0.2);
+    margin-left: 20px;
+}
+
+.hero-image img {
+    width: 100%;
+    height: auto;
+    transition: transform 0.5s ease;
+    animation: float 6s ease-in-out infinite;
+}
+
+.hero-image:hover img {
+    transform: scale(1.05);
+}
+
+.chat-button {
+    display: flex;
+    background: #fe5beb;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 12px 25px;
+    border-radius: 25px;
+    text-decoration: none;
+    margin-top: 15px;
+    transition: all 0.3s ease-in-out;
+    border: 2px solid transparent;
+    justify-content: center;
+    align-items: center;
+}
+
+.chat-button:hover {
+    background: #00ffea;
+    color: #0a0f24;
+    transform: translateY(-3px);
+    box-shadow: 0 0 15px rgba(0, 255, 234, 0.6);
+}
+
+/* ================= Features Section ================= */
+.features {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 50px 20px;
+    flex-wrap: wrap;
+}
+
+.feature {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    width: 250px;
+    transition: all 0.3s ease-in-out;
+}
+
+.feature img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.feature h3 {
+    color: #00ffea;
+    margin-top: 10px;
+}
+
+.feature:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0, 255, 234, 0.3);
+}
+
+/* ================= How It Works Section ================= */
+.how-it-works {
+    padding: 50px 20px;
+}
+
+.how-it-works h2 {
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+.steps {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.step {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    width: 250px;
+    transition: all 0.3s ease-in-out;
+}
+
+.step img {
+    /* width: 250px;
+    height: auto;
+    padding: 0px 20px 0 0; */
+  
+    width: 250px;
+    height: 200px; /* Adjust as needed */
+    object-fit: cover; /* Ensures proper scaling */
+    display: block;
+    margin: 0 auto;
+
+
+}
+
+.step h3 {
+    color: #00ffea;
+    margin-top: 10px;
+}
+
+.step:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0, 255, 234, 0.3);
+}
+
+/* ================= Footer ================= */
+footer {
+    padding: 20px;
+    background: #141e30;
+    margin-top: 40px;
+}
+
+.footer-links a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1rem;
+    margin: 0 15px;
+    transition: 0.3s;
+}
+
+.footer-links a:hover {
+    color: #00ffea;
+}
+
+.footer-text {
+    margin-top: 10px;
+}
+
+/* ================= Fade-in Animation ================= */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ================= Smooth Hover Effects ================= */
+* {
+    transition: all 0.3s ease-in-out;
+}
+
+/* ================= About Page Styles ================= */
+.team-section {
+    text-align: center;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.team-members {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 40px;
+}
+
+.team-card {
+    background: rgba(0, 0, 0, 0.304);
+    backdrop-filter: blur(15px);
+    border-radius: 16px;
+    padding: 30px;
+    width: 280px;
+    text-align: center;
+    transition: all 0.4s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.team-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.team-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.team-card:hover::before {
+    left: 100%;
+}
+
+.team-card h3 {
+    color: #f39c12;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+}
+
+/* ================= Meditation Page Styles ================= */
+header {
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    margin: 20px auto;
+    width: 80%;
+    animation: fadeIn 1.5s ease-in-out;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+
+.timer-container {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    width: 50%;
+    margin: 20px auto;
+    animation: fadeIn 1.5s ease-in-out;
+}
+
+#timer {
+    font-size: 2.5rem;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    display: inline-block;
+    animation: breathing 4s infinite ease-in-out;
+}
+
+.sound-container {
+    text-align: center;
+    margin-top: 50px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    width: 50%;
+    margin: 20px auto;
+    animation: fadeIn 1.5s ease-in-out;
+}
+
+button {
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+button:hover {
+    background-color: #e67e22;
+}
+footer {
+    margin-top: 30px;
+    padding: 15px;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    width: 80%;
+    margin: 20px auto;
+}
+
+/* ================= Chatbot Page Styles ================= */
+.chat-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    background: rgba(13, 17, 23, 0.8);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(0, 255, 213, 0.15);
+}
+
+.chat-box {
+    height: 400px;
+    overflow-y: auto;
+    background: rgba(26, 29, 36, 0.6);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    scroll-behavior: smooth; /* ✅ Improved scrolling */
+}
+
+.user-message, .bot-message {
+    max-width: 80%;
+    padding: 1rem;
+    margin: 0.8rem;
+    border-radius: 12px;
+    animation: slideIn 0.3s ease-out;
+    line-height: 1.5;
+}
+
+.user-message {
+    background: #00ffd5;
+    color: #0a0a0f;
+    margin-left: auto;
+    text-align: right;
+    box-shadow: 0 2px 8px rgba(0, 255, 213, 0.2);
+}
+
+.bot-message {
+    background: #1a1d24;
+    color: #e1e1e6;
+    margin-right: auto;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* ✅ Chat Input & Send Button Wrapper */
+.input-area {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* ✅ Updated Input Field */
+input[type="text"] {
+    flex-grow: 1;
+    padding: 1rem;
+    background: rgba(26, 29, 36, 0.8);
+    border: 2px solid #00ffd5;
+    color: #e1e1e6;
+    border-radius: 8px;
+    font-size: 1rem;
+    text-align: left;
+}
+
+input[type="text"]::placeholder {
+    color: #666;
+}
+
+/* ✅ Improved Send Button for Mobile */
+.send-btn {
+    padding: 1rem 1.5rem;
+    border: 2px solid #00ffd5;
+    background: transparent;
+    color: #00ffd5;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.send-btn:hover {
+    background: #00ffd5;
+    color: #0a0a0f;
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(0, 255, 213, 0.4);
+}
+
+/* ✅ Scrollbar Enhancements */
+.chat-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-box::-webkit-scrollbar-track {
+    background: #1a1d24;
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+    background: #00ffd5;
+    border-radius: 3px;
+}
+
+
