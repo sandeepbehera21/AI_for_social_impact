@@ -56,12 +56,16 @@ def _init() -> None:
         if config_val.startswith("{"):
             try:
                 cert_dict = json.loads(config_val)
+                if "private_key" in cert_dict:
+                    # Fix formatting for pasted environment variables (literal \n -> actual newline)
+                    cert_dict["private_key"] = cert_dict["private_key"].replace("\\n", "\n")
                 cred = credentials.Certificate(cert_dict)
                 logger.info("Firebase Admin initialising from raw JSON string.")
             except Exception as json_err:
                 _init_error = f"Failed to parse raw JSON credentials: {json_err}"
                 logger.warning("Firebase Admin disabled: %s", _init_error)
                 return
+
         else:
             cred_path = _resolve_credentials_path()
             if not os.path.exists(cred_path):
