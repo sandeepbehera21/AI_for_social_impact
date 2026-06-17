@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /$
+Allow: /meditation
+Allow: /chat
+Allow: /privacy
+Allow: /terms
+Allow: /cookies
+Allow: /login
+Allow: /signup
+Disallow: /dashboard/
+Disallow: /journal
+Disallow: /cbt
+Disallow: /wellness
+Disallow: /habits
+Disallow: /sos
+Disallow: /consult-doc
+Disallow: /doctor/
+Disallow: /consultation/
+
+Sitemap: https://mindease.app/sitemap.xml

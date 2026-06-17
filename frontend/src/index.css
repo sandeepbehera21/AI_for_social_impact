@@ -1,0 +1,318 @@
+@import 'tailwindcss';
+
+/*
+ * MindEase design system
+ * ----------------------
+ * A calm, therapeutic palette: sage-teal primary, serene indigo accent, on
+ * warm neutrals. Every colour is a semantic CSS variable so the entire app
+ * (cards, charts, dialogs, chat) re-themes by flipping a single `.dark` class
+ * on <html>. Components use semantic Tailwind utilities (bg-surface,
+ * text-fg, bg-primary…) and almost never hardcode a hex value.
+ */
+
+/* Class-based dark mode (not prefers-color-scheme) so the toggle wins. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Light theme (default) ─────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+
+  --bg: #f1f6f3;
+  --bg-tint-1: rgba(13, 148, 136, 0.06); /* ambient teal blob */
+  --bg-tint-2: rgba(99, 102, 241, 0.05); /* ambient indigo blob */
+
+  --surface: #ffffff;
+  --surface-2: #e9f1ed;
+  --elevated: #ffffff;
+
+  --fg: #13211c;
+  --muted: #56675f;
+  --faint: #859790;
+
+  --border: #dde7e2;
+  --border-strong: #c9d6cf;
+
+  --primary: #0d9488; /* teal-600 */
+  --primary-hover: #0f766e; /* teal-700 */
+  --primary-fg: #ffffff;
+  --primary-soft: #d3efe9;
+
+  --accent: #6366f1; /* indigo-500 */
+  --accent-fg: #ffffff;
+  --accent-soft: #e5e7fd;
+
+  --success: #15803d;
+  --success-soft: #dcfce7;
+  --warning: #b45309;
+  --warning-soft: #fef0d6;
+  --danger: #dc2626;
+  --danger-fg: #ffffff;
+  --danger-soft: #fde4e4;
+
+  --ring: #0d9488;
+
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(19, 33, 28, 0.08);
+
+  --shadow-sm: 0 1px 2px rgba(19, 33, 28, 0.06);
+  --shadow-md: 0 8px 24px -8px rgba(19, 33, 28, 0.12);
+  --shadow-lg: 0 24px 48px -16px rgba(19, 33, 28, 0.18);
+}
+
+/* ── Dark theme ────────────────────────────────────────────────────────── */
+.dark {
+  color-scheme: dark;
+
+  --bg: #0e1512; /* deep forest-navy */
+  --bg-tint-1: rgba(45, 212, 191, 0.08);
+  --bg-tint-2: rgba(129, 140, 248, 0.07);
+
+  --surface: #16201b;
+  --surface-2: #1c2823;
+  --elevated: #1f2c26;
+
+  --fg: #e7f0ec;
+  --muted: #93a89f;
+  --faint: #6b7e75;
+
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --primary: #2dd4bf; /* teal-400 — brighter for dark */
+  --primary-hover: #5eead4;
+  --primary-fg: #04211c;
+  --primary-soft: rgba(45, 212, 191, 0.14);
+
+  --accent: #a5b4fc; /* indigo-300 lavender */
+  --accent-fg: #0e1512;
+  --accent-soft: rgba(165, 180, 252, 0.16);
+
+  --success: #34d399;
+  --success-soft: rgba(52, 211, 153, 0.15);
+  --warning: #fbbf24;
+  --warning-soft: rgba(251, 191, 36, 0.15);
+  --danger: #f87171;
+  --danger-fg: #1a0c0c;
+  --danger-soft: rgba(248, 113, 113, 0.15);
+
+  --ring: #2dd4bf;
+
+  --glass-bg: rgba(255, 255, 255, 0.045);
+  --glass-border: rgba(255, 255, 255, 0.09);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 24px 48px -16px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Map semantic variables to Tailwind utilities ──────────────────────────
+ * `@theme inline` makes bg-surface, text-fg, text-muted, bg-primary,
+ * border-border, ring-ring, etc. resolve to the variables above — so they
+ * flip automatically with the theme, no `dark:` variants needed.
+ */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-elevated: var(--elevated);
+
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-fg: var(--danger-fg);
+  --color-danger-soft: var(--danger-soft);
+
+  --color-ring: var(--ring);
+
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --shadow-soft: var(--shadow-md);
+  --shadow-float: var(--shadow-lg);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100vh;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--fg);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::selection {
+  background: var(--primary-soft);
+  color: var(--fg);
+}
+
+/* Accessible focus ring for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* ── Surfaces ──────────────────────────────────────────────────────────── */
+/* Frosted glass — theme-aware. */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--glass-border);
+}
+
+/* Solid card surface with a soft shadow — the default content container. */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Brand wordmark ────────────────────────────────────────────────────── */
+/* Calm gradient text — replaces the old neon glow. */
+.brand-text {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Animations ────────────────────────────────────────────────────────── */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fadeUp 0.4s ease-out both;
+}
+
+/* Three-dot typing indicator for the chat. */
+@keyframes typingBounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+.typing-dot {
+  animation: typingBounce 1.2s infinite ease-in-out;
+}
+
+/* Shimmer for skeleton loaders. */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--glass-border),
+    transparent
+  );
+  animation: shimmer 1.6s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .typing-dot,
+  .skeleton::after,
+  .animate-fade-up {
+    animation: none;
+  }
+}
+
+/* ── Scrollbars ────────────────────────────────────────────────────────── */
+.chat-scroll::-webkit-scrollbar,
+.thin-scroll::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+.chat-scroll::-webkit-scrollbar-track,
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-scroll::-webkit-scrollbar-thumb,
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+.chat-scroll::-webkit-scrollbar-thumb:hover,
+.thin-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* Slide-in animation for chat messages */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slide-in {
+  animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+

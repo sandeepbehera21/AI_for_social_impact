@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d9488" />
+    <meta
+      name="description"
+      content="MindEase — a calm, private AI mental-health companion with mood tracking, guided self-care, and clinician support."
+    />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mindease.app/" />
+    <meta property="og:title" content="MindEase — AI Mental Health Companion" />
+    <meta property="og:description" content="MindEase is a private AI mental-health companion featuring secure mood tracking, guided self-care worksheets, and encrypted video consultations." />
+    <meta property="og:image" content="https://mindease.app/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://mindease.app/" />
+    <meta property="twitter:title" content="MindEase — AI Mental Health Companion" />
+    <meta property="twitter:description" content="MindEase is a private AI mental-health companion featuring secure mood tracking, guided self-care worksheets, and encrypted video consultations." />
+    <meta property="twitter:image" content="https://mindease.app/og-image.png" />
+
+    <title>MindEase — AI Mental Health Companion</title>
+
+    <!-- Modern type. Preconnect keeps the font request off the critical path. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!--
+      Apply the saved theme BEFORE first paint to avoid a light/dark flash.
+      Mirrors the logic in src/context/ThemeContext.jsx.
+    -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('mindease-theme');
+          if (t !== 'light' && t !== 'dark') {
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+          }
+          document.documentElement.classList.toggle('dark', t === 'dark');
+          document.documentElement.style.colorScheme = t;
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

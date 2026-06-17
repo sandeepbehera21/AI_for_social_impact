@@ -1,0 +1,28 @@
+# ---- Web framework ----
+fastapi>=0.110
+uvicorn[standard]>=0.29
+websockets>=12.0
+pydantic>=2.0
+python-dotenv>=1.0
+
+# ---- NLP severity pipeline (PyTorch + Transformers, CPU/INT8) ----
+# The chatbot is 100% local — no external LLM (Gemini/OpenAI) dependency.
+# Install torch from the CPU wheel index for a smaller, GPU-free build:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch>=2.2
+transformers>=4.40
+
+# ---- Telehealth video (Agora RTC token) ----
+agora-token-builder>=1.0.0
+
+# ---- Clinical reports + cryptography (Phase 4) ----
+# PDF generation, AES-256-GCM field encryption, RSA-2048 signatures.
+reportlab>=4.0
+pycryptodome>=3.20
+
+# ---- Tests ----
+pytest>=8.0
+httpx>=0.27
+
+# ---- Firebase Admin (auth verification + Firestore from the backend) ----
+firebase-admin>=6.5

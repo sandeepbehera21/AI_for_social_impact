@@ -1,0 +1,276 @@
+rules_version = '2';
+
+// MindEase Firestore security rules.
+// Deploy with:  firebase deploy --only firestore:rules
+// (or paste into Firebase console → Firestore → Rules).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myUid() {
+      return request.auth.uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(myUid())).data.role == 'admin';
+    }
+
+    // ---- users ----------------------------------------------------------
+    // Any signed-in user can read profiles (patients need to browse doctors).
+    // A user may only create/modify their OWN profile, and the role is locked
+    // to one of the two valid values at creation time.
+    match /users/{userId} {
+      allow read: if isSignedIn()
+        && (myUid() == userId || resource.data.role == 'doctor' || isAdmin());
+
+      allow create: if isSignedIn()
+        && myUid() == userId
+        && request.resource.data.role in ['patient', 'doctor']
+        && request.resource.data.uid == userId
+        && (request.resource.data.role != 'doctor' || request.resource.data.verified == false);
+
+      allow update: if isSignedIn()
+        && myUid() == userId
+        // role is immutable after creation
+        && request.resource.data.role == resource.data.role
+        && (!('verified' in request.resource.data) || request.resource.data.verified == resource.data.verified);
+
+      allow delete: if false;
+    }
+
+    // ---- appointments ---------------------------------------------------
+    // Visible only to the two parties (patient + doctor). As of Phase 4 the
+    // clinical free-text fields (sessionNotes, diagnosis, prescriptions) and the
+    // report PDF are stored AES-256-encrypted; reads here only ever return
+    // ciphertext — the backend decrypts for authorised API calls.
+    match /appointments/{appointmentId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientId == myUid()
+            || resource.data.doctorId == myUid());
+
+      // Patients book; bookings always start life as "pending" and the patient
+      // can only file appointments under their own id.
+      allow create: if isSignedIn()
+        && request.resource.data.patientId == myUid()
+        && request.resource.data.status == 'pending';
+
+      // Either party can advance the appointment (doctor approves/rejects,
+      // either side marks it completed when the call ends). The two principals
+      // are immutable. Note: completion + clinical signing is performed by the
+      // backend via the Admin SDK (which bypasses these rules), so clients
+      // never write the signature / encrypted clinical fields themselves.
+      allow update: if isSignedIn()
+        && (resource.data.doctorId == myUid()
+            || resource.data.patientId == myUid())
+        && request.resource.data.patientId == resource.data.patientId
+        && request.resource.data.doctorId == resource.data.doctorId;
+
+      allow delete: if false;
+
+      // ── Consultation chat messages (subcollection) ─────────────
+      // Only the two parties in the appointment may read and send messages.
+      match /messages/{messageId} {
+        function isParty() {
+          return get(/databases/$(database)/documents/appointments/$(appointmentId)).data.patientId == myUid()
+              || get(/databases/$(database)/documents/appointments/$(appointmentId)).data.doctorId == myUid();
+        }
+        allow read:   if isSignedIn() && isParty();
+        allow create: if isSignedIn() && isParty()
+          && request.resource.data.senderId == myUid()
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000;
+        allow update, delete: if false;
+      }
+    }
+
+    // ---- doctor_keys ----------------------------------------------------
+    // A doctor's AES-sealed RSA private key. NEVER readable or writable by any
+    // client — only the backend (Firebase Admin SDK) may touch it. Public keys
+    // live on the world-readable users/{uid} profile instead.
+    match /doctor_keys/{doctorId} {
+      allow read, write: if false;
+    }
+
+    // ---- ratings --------------------------------------------------------
+    // Individual patient reviews for doctors.
+    // A patient can create one review per appointment; reviews are immutable.
+    // Read is restricted to the patient who wrote it or the doctor being reviewed,
+    // to prevent exposing patient identity via public rating lists.
+    match /ratings/{reviewId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientId == myUid() || resource.data.doctorId == myUid());
+      allow create: if isSignedIn()
+        && request.resource.data.patientId == myUid()
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() <= 500
+        // Harden: ensure rating is linked to a completed appointment they were a part of.
+        && get(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.patientId == myUid()
+        && get(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.doctorId == request.resource.data.doctorId
+        && get(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.status == 'completed';
+      allow update, delete: if false;
+    }
+
+    // ---- doctor_ratings -------------------------------------------------
+    // Pre-computed aggregate { avgRating, ratingCount } per doctor.
+    // Client writes are DISABLED — this collection is maintained exclusively
+    // by the backend (Firebase Admin SDK) to prevent rating manipulation.
+    match /doctor_ratings/{doctorId} {
+      allow read:  if isSignedIn();
+      allow write: if false;
+    }
+
+    // ---- mood_entries ---------------------------------------------------
+    match /mood_entries/{entryId} {
+      allow read: if isSignedIn() && resource.data.patientId == myUid();
+
+      allow create: if isSignedIn()
+        && request.resource.data.patientId == myUid()
+        && request.resource.data.dominantEmotion in ['Happy', 'Sad', 'Angry', 'Fear', 'Neutral']
+        && request.resource.data.confidence is number
+        && request.resource.data.confidence >= 0
+        && request.resource.data.confidence <= 1;
+
+      allow update, delete: if false;
+    }
+
+    // ---- journals --------------------------------------------------------
+    match /journals/{journalId} {
+      allow read: if isSignedIn() && resource.data.patientId == myUid();
+      allow create: if isSignedIn() && request.resource.data.patientId == myUid();
+      allow update: if isSignedIn() && resource.data.patientId == myUid() && request.resource.data.patientId == myUid();
+      allow delete: if isSignedIn() && resource.data.patientId == myUid();
+    }
+
+    // ---- cbt_exercises ---------------------------------------------------
+    match /cbt_exercises/{exerciseId} {
+      allow read: if isSignedIn() && resource.data.patientId == myUid();
+      allow create: if isSignedIn() && request.resource.data.patientId == myUid();
+      allow update: if isSignedIn() && resource.data.patientId == myUid() && request.resource.data.patientId == myUid();
+      allow delete: if isSignedIn() && resource.data.patientId == myUid();
+    }
+
+    // ---- wellness_plans (Phase 2) ---------------------------------------
+    match /wellness_plans/{planId} {
+      allow read: if isSignedIn() && resource.data.patientId == myUid();
+      allow create: if isSignedIn() && request.resource.data.patientId == myUid();
+      allow update: if isSignedIn()
+        && resource.data.patientId == myUid()
+        && request.resource.data.patientId == resource.data.patientId;
+      allow delete: if isSignedIn() && resource.data.patientId == myUid();
+    }
+
+    // ---- wellness_scores (Phase 2) ---------------------------------------
+    match /wellness_scores/{scoreId} {
+      allow read: if isSignedIn() && resource.data.patientId == myUid();
+      allow create: if isSignedIn() && request.resource.data.patientId == myUid();
+      allow update: if isSignedIn()
+        && resource.data.patientId == myUid()
+        && request.resource.data.patientId == resource.data.patientId;
+      allow delete: if isSignedIn() && resource.data.patientId == myUid();
+    }
+
+    // ---- habit_entries (Phase 2) ----------------------------------------
+    match /habit_entries/{entryId} {
+      allow read: if isSignedIn() && resource.data.patientId == myUid();
+      allow create: if isSignedIn() && request.resource.data.patientId == myUid();
+      allow update: if isSignedIn()
+        && resource.data.patientId == myUid()
+        && request.resource.data.patientId == resource.data.patientId;
+      allow delete: if isSignedIn() && resource.data.patientId == myUid();
+    }
+
+    // ---- crisis_events (Phase 2) ----------------------------------------
+    match /crisis_events/{eventId} {
+      allow read: if isSignedIn() && resource.data.patientId == myUid();
+      allow create: if isSignedIn()
+        && request.resource.data.patientId == myUid()
+        && request.resource.data.type is string
+        && request.resource.data.type in [
+          'sos_opened', 'grounding_completed', 'breathing_completed',
+          'chat_crisis', 'trusted_contact_used'
+        ];
+      allow update, delete: if false;
+    }
+
+    // ---- trusted_contacts (Phase 2) -------------------------------------
+    match /trusted_contacts/{contactId} {
+      allow read: if isSignedIn() && resource.data.patientId == myUid();
+      allow create: if isSignedIn() && request.resource.data.patientId == myUid();
+      allow update: if isSignedIn()
+        && resource.data.patientId == myUid()
+        && request.resource.data.patientId == resource.data.patientId
+        // Only allow changing contact details, not ownership
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['name', 'phone', 'relationship']);
+      allow delete: if isSignedIn() && resource.data.patientId == myUid();
+    }
+
+    // ---- waitlist --------------------------------------------------------
+    match /waitlist/{itemId} {
+      allow read: if isSignedIn()
+        && (resource.data.patientId == myUid() || resource.data.doctorId == myUid());
+      allow create: if isSignedIn()
+        && request.resource.data.patientId == myUid();
+      allow update: if isSignedIn()
+        && (resource.data.patientId == myUid() || resource.data.doctorId == myUid())
+        && request.resource.data.patientId == resource.data.patientId;
+      allow delete: if isSignedIn() && resource.data.patientId == myUid();
+    }
+
+    // ---- consent_audit (clinician access audit logs) ---------------------
+    match /consent_audit/{auditId} {
+      allow read: if isSignedIn() && (resource.data.patientId == myUid() || isAdmin());
+      allow write: if false;
+    }
+
+    // ---- broadcasts (announcements & warnings) -------------------------
+    match /broadcasts/{broadcastId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // ---- chatbot_feedback (👍/👎 feedback) ------------------------------
+    // Feedback must be attributed to the authenticated user.
+    match /chatbot_feedback/{feedbackId} {
+      allow create: if isSignedIn()
+        && request.resource.data.patientId == myUid();
+      allow read, update, delete: if false;
+    }
+
+    // ---- recommendations (daily AI-guidance snapshots) ------------------
+    // One doc per patient per day. Owner-only on the client; the doctor reads
+    // the history through the backend Admin SDK (bypasses these rules), exactly
+    // like wellness_scores.
+    match /recommendations/{recId} {
+      allow read: if isSignedIn() && resource.data.patientId == myUid();
+      allow create: if isSignedIn() && request.resource.data.patientId == myUid();
+      allow update: if isSignedIn()
+        && resource.data.patientId == myUid()
+        && request.resource.data.patientId == resource.data.patientId;
+      allow delete: if isSignedIn() && resource.data.patientId == myUid();
+    }
+
+    // ---- notifications (in-app reminders + clinician alerts) ------------
+    // Each notification is addressed to a single recipient via `userId`.
+    // Patients create their OWN reminder notifications client-side; clinician
+    // crisis alerts (userId == a doctor) are written by the backend Admin SDK,
+    // which bypasses these rules — so a client can never create a notification
+    // addressed to someone else. Recipients may only flip the read flag.
+    match /notifications/{notifId} {
+      allow read: if isSignedIn() && resource.data.userId == myUid();
+      allow create: if isSignedIn() && request.resource.data.userId == myUid();
+      allow update: if isSignedIn()
+        && resource.data.userId == myUid()
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      allow delete: if isSignedIn() && resource.data.userId == myUid();
+    }
+  }
+}

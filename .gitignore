@@ -1,0 +1,37 @@
+# ---- Secrets (ROTATE the keys that were previously committed) ----
+.env
+.env.*
+!.env.example
+backend/firebase-config.json
+!backend/firebase-config.example.json
+
+# ---- Stray SSH keys (committed by mistake; ROTATE) ----
+new-ai-chatbot
+new-ai-chatbot.pub
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+llama_env/
+.venv/
+venv/
+*.egg-info/
+
+# ---- Node / Vite ----
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# ---- ONNX model weights (downloaded at setup, not committed) ----
+*.onnx
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.pytest_cache/
+.claude/
+.gemini/
+
