@@ -12,8 +12,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the backend code
 COPY . .
 
-# Expose the port Render will use
-EXPOSE 8000
+# Expose the port Hugging Face Spaces expects
+EXPOSE 7860
 
 # Start the FastAPI app via Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
+
