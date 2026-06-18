@@ -680,72 +680,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── 11. MODERN FOOTER SITEMAP ── */}
-        <footer className="border-t border-border bg-surface py-16 px-6 mt-12">
-          <div className="mx-auto max-w-6xl">
-            <div className="grid gap-10 md:grid-cols-12 mb-12">
-              
-              {/* Logo / Brand Column */}
-              <div className="md:col-span-4 space-y-4">
-                <Link to="/" className="flex items-center gap-2.5">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-soft text-primary">
-                    <Brain className="h-5 w-5" />
-                  </span>
-                  <span className="brand-text text-xl font-extrabold tracking-tight">MindEase</span>
-                </Link>
-                <p className="text-xs leading-relaxed text-muted max-w-sm">
-                  An integrated mental health portal combining secure on-device cognitive tracking, evidence-based CBT exercises, private reflections, and time-gated clinical video consultations.
-                </p>
-              </div>
-
-              {/* Sitemap Links */}
-              <div className="md:col-span-3">
-                <h4 className="text-xs uppercase font-extrabold tracking-widest text-fg mb-4">Sitemap</h4>
-                <ul className="space-y-2.5 text-xs text-muted">
-                  <li><Link to="/" className="hover:text-primary transition-colors">Home</Link></li>
-                  <li><Link to="/chat" className="hover:text-primary transition-colors">AI Therapeutic Chat</Link></li>
-                  <li><Link to="/consult-doc" className="hover:text-primary transition-colors">Consult Licensed Doctor</Link></li>
-                  <li><Link to="/journal" className="hover:text-primary transition-colors">Reflective Journal</Link></li>
-                  <li><Link to="/cbt" className="hover:text-primary transition-colors">CBT Worksheets</Link></li>
-                  <li><Link to="/meditation" className="hover:text-primary transition-colors">Meditation Sanctuary</Link></li>
-                </ul>
-              </div>
-
-              {/* Crisis Resources Links */}
-              <div className="md:col-span-3">
-                <h4 className="text-xs uppercase font-extrabold tracking-widest text-fg mb-4">Crisis Help Contacts</h4>
-                <ul className="space-y-2 text-xs text-muted">
-                  <li><span className="font-semibold text-fg">US National Crisis:</span> Call or Text 988</li>
-                  <li><span className="font-semibold text-fg">Crisis Text Line:</span> Text HOME to 741741</li>
-                  <li><span className="font-semibold text-fg">India Crisis line:</span> Call 9152987821</li>
-                  <li><span className="font-semibold text-fg">Emergency Services:</span> Call 911 / 112</li>
-                </ul>
-              </div>
-
-              {/* Legal & Portals */}
-              <div className="md:col-span-2">
-                <h4 className="text-xs uppercase font-extrabold tracking-widest text-fg mb-4">Portals &amp; Legal</h4>
-                <ul className="space-y-2.5 text-xs text-muted">
-                  <li><Link to="/login" className="hover:text-primary transition-colors">Clinician &amp; Patient Sign In</Link></li>
-                  <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
-                  <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
-                  <li><a href="#" className="hover:text-primary transition-colors">Contact Support</a></li>
-                </ul>
-              </div>
-
-            </div>
-
-            {/* Bottom copyright section */}
-            <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-faint">
-              <div>
-                © {new Date().getFullYear()} MindEase. Made with care for mental well-being.
-              </div>
-              <div className="text-center md:text-right max-w-md">
-                Disclaimer: MindEase is a self-reflection and connection portal. Digital services do not replace physical clinical interventions.
-              </div>
-            </div>
-          </div>
-        </footer>
+        {/* Global Footer is rendered by App.jsx at the root layout level */}
 
       </div>
     </PageTransition>
