@@ -1,4 +1,15 @@
+---
+title: MindEase Backend
+emoji: 🛡️
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # MindEase Backend (FastAPI)
+
 
 High-performance FastAPI backend: real-time chat with an NLP severity pipeline
 (PyTorch / INT8-quantized RoBERTa), Gemini-powered empathetic replies, and an

@@ -36,6 +36,12 @@ export default function ProtectedRoute({ allow, children }) {
     return <Navigate to="/select-role" replace />
   }
 
+  // If role is already assigned and user is trying to access /select-role,
+  // redirect them to their respective dashboard.
+  if (role && location.pathname === '/select-role') {
+    return <Navigate to={dashboardPathFor(role)} replace />
+  }
+
   // Onboarding gate for patients: redirect to /onboarding if not completed
   if (role === ROLES.PATIENT && profile?.onboarded !== true && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />
