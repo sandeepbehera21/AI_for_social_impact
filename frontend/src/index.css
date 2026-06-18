@@ -359,4 +359,14 @@ body {
   animation: liquidFlow 10s ease infinite;
 }
 
+/* Fix unreadable select option text colors in dark mode */
+select option {
+  background-color: var(--surface);
+  color: var(--fg);
+}
+select option:disabled {
+  color: var(--faint);
+}
+
+
 
