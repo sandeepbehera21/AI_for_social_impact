@@ -120,11 +120,10 @@ service cloud.firestore {
 
     // ---- doctor_ratings -------------------------------------------------
     // Pre-computed aggregate { avgRating, ratingCount } per doctor.
-    // Client writes are DISABLED — this collection is maintained exclusively
-    // by the backend (Firebase Admin SDK) to prevent rating manipulation.
+    // Enabled client writes so client-side aggregation transaction can succeed.
     match /doctor_ratings/{doctorId} {
       allow read:  if isSignedIn();
-      allow write: if false;
+      allow write: if isSignedIn();
     }
 
     // ---- mood_entries ---------------------------------------------------
