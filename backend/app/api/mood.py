@@ -38,11 +38,13 @@ _MAX_SAMPLES = 2000
 
 
 def _has_appointment(db, doctor_id: str, patient_id: str) -> bool:
-    """True when the doctor has at least one appointment with the patient."""
+    """True when the doctor has at least one approved/completed appointment with consent from the patient."""
     snap = (
         db.collection("appointments")
         .where(filter=FieldFilter("doctorId", "==", doctor_id))
         .where(filter=FieldFilter("patientId", "==", patient_id))
+        .where(filter=FieldFilter("status", "in", ["approved", "completed"]))
+        .where(filter=FieldFilter("shareConsent", "==", True))
         .limit(1)
         .get()
     )

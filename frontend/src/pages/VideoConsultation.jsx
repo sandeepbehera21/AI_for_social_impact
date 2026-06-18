@@ -956,9 +956,21 @@ export default function VideoConsultation() {
                   Loading patient medical summary...
                 </div>
               ) : summaryError ? (
-                <div className="rounded-lg border border-danger/30 bg-danger-soft p-3 text-xs text-danger text-center">
-                  {summaryError}
-                </div>
+                summaryError.toLowerCase().includes('consent') || summaryError.includes('403') ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-warning-soft text-warning mb-3">
+                      <Lock className="h-6 w-6" />
+                    </div>
+                    <h5 className="font-bold text-fg mb-1 text-sm">Consent Pending</h5>
+                    <p className="text-muted leading-relaxed text-[11px] max-w-[200px]">
+                      The patient has not yet consented to share their mental health records for this consultation.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-danger/30 bg-danger-soft p-3 text-xs text-danger text-center">
+                    {summaryError}
+                  </div>
+                )
               ) : !patientSummary ? (
                 <div className="text-center text-xs text-faint py-10">No summary loaded.</div>
               ) : (

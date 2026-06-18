@@ -29,7 +29,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { subscribeMoodEntries, aggregateMood } from '../lib/moodHistory.js'
 import { subscribeHabits, aggregateHabits } from '../lib/habits.js'
 import { exportPatientData } from '../lib/dataExport.js'
-import { requestAppointment, subscribeAppointments } from '../lib/appointments.js'
+import { requestAppointment, subscribeAppointments, APPT_STATUS } from '../lib/appointments.js'
 import {
   subscribeActivePlan,
   computeWellnessScore,
@@ -211,6 +211,12 @@ export default function PatientDashboard() {
     [wellnessSignals],
   )
 
+  const upcomingAppointments = useMemo(() => {
+    return appointments.filter(
+      (a) => a.status === APPT_STATUS.PENDING || a.status === APPT_STATUS.APPROVED
+    )
+  }, [appointments])
+
   // Persist the recommendations the patient is actually shown (idempotent per day).
   useEffect(() => {
     if (!profile?.uid || !recommendations.length) return
@@ -318,6 +324,76 @@ export default function PatientDashboard() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* ── Upcoming Consultations ── */}
+      {upcomingAppointments.length > 0 && (
+        <section className="card mb-6 p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-fg">
+            <Clock className="h-5 w-5 text-accent" /> Upcoming Consultations
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {upcomingAppointments.map((a) => {
+              const isApproved = a.status === APPT_STATUS.APPROVED
+              const hasConsent = a.shareConsent === true
+              return (
+                <div
+                  key={a.id}
+                  className="flex flex-col justify-between rounded-xl border border-border bg-surface-2 p-4"
+                >
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-fg">Dr. {a.doctorName}</span>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          a.status === APPT_STATUS.APPROVED
+                            ? 'bg-success/20 text-success'
+                            : 'bg-warning/20 text-warning'
+                        }`}
+                      >
+                        {a.status === APPT_STATUS.APPROVED ? 'Approved' : 'Pending'}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-xs text-muted">
+                      {new Date(a.dateTime).toLocaleString(undefined, {
+                        dateStyle: 'medium',
+                        timeStyle: 'short',
+                      })}
+                    </div>
+                  </div>
+
+                  {isApproved && (
+                    <div className="mt-4 border-t border-border/60 pt-3">
+                      {hasConsent ? (
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-success">
+                          <Check className="h-4 w-4" /> Consented to Share Details
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-2">
+                          <p className="text-[11px] text-muted">
+                            Consent is required for your practitioner to review your emotional and wellness summaries.
+                          </p>
+                          <button
+                            onClick={async () => {
+                              try {
+                                await updateDoc(doc(db, 'appointments', a.id), { shareConsent: true })
+                              } catch (err) {
+                                console.error('[PatientDashboard] Error granting consent:', err)
+                              }
+                            }}
+                            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-fg hover:bg-primary-hover transition cursor-pointer"
+                          >
+                            <Shield className="h-3.5 w-3.5" /> Share Health Data
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </section>
       )}
 
       {/* ── Mood trends (from on-device emotion tracking in chat) ── */}

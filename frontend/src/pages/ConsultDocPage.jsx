@@ -12,6 +12,8 @@ import {
   BadgeCheck,
   X,
   ShieldCheck,
+  Shield,
+  Check,
 } from 'lucide-react'
 import PageTransition from '../components/PageTransition.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
@@ -607,12 +609,33 @@ export default function ConsultDocPage() {
                   <StatusBadge status={a.status} />
                 </div>
                 <div className="mb-4 text-sm text-muted">{formatDateTime(a.dateTime)}</div>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap items-center gap-2">
                   <CountdownJoinButton
                     appointment={a}
                     isDoctor={false}
                     onJoin={() => navigate(`/consultation/${a.id}`)}
                   />
+                  {a.status === APPT_STATUS.APPROVED && (
+                    a.shareConsent === true ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-success bg-success/10 px-2.5 py-1.5 rounded-lg">
+                        <Check className="h-3.5 w-3.5" /> Consented
+                      </span>
+                    ) : (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await updateDoc(doc(db, 'appointments', a.id), { shareConsent: true })
+                            setNotice({ type: 'ok', text: 'Health data sharing consent granted successfully.' })
+                          } catch (err) {
+                            setNotice({ type: 'err', text: err.message })
+                          }
+                        }}
+                        className="inline-flex items-center justify-center gap-1 rounded-lg bg-primary px-2.5 py-1.5 text-xs font-semibold text-primary-fg hover:bg-primary-hover transition cursor-pointer"
+                      >
+                        <Shield className="h-3.5 w-3.5" /> Share Health Data
+                      </button>
+                    )
+                  )}
                   {(a.status === APPT_STATUS.PENDING || a.status === APPT_STATUS.APPROVED) && (
                     <button
                       onClick={async () => {

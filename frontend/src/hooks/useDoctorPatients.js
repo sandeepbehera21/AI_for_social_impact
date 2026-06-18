@@ -55,20 +55,39 @@ export function useDoctorPatients() {
   // 3. Fetch missing summaries (mood + wellness) per patient, once each.
   useEffect(() => {
     let alive = true
-    const missing = patientIds.filter(
-      (id) => !summaryCache.has(id) && !inFlight.current.has(id),
-    )
+    const missing = patientIds.filter((id) => {
+      if (inFlight.current.has(id)) return false
+      if (!summaryCache.has(id)) return true
+      
+      const patientAppointments = appointments.filter((a) => a.patientId === id)
+      const hasConsent = patientAppointments.some((a) => a.shareConsent === true && (a.status === 'approved' || a.status === 'completed'))
+      const cached = summaryCache.get(id)
+      if (hasConsent && cached && cached.noConsent === true) {
+        return true
+      }
+      return false
+    })
+
     if (missing.length === 0) return
     missing.forEach((id) => inFlight.current.add(id))
     setLoadingSummaries(true)
 
     Promise.all(
       missing.map(async (id) => {
+        const patientAppointments = appointments.filter((a) => a.patientId === id)
+        const hasConsent = patientAppointments.some((a) => a.shareConsent === true && (a.status === 'approved' || a.status === 'completed'))
+        
+        if (!hasConsent) {
+          summaryCache.set(id, { mood: null, wellness: null, noConsent: true })
+          inFlight.current.delete(id)
+          return
+        }
+
         const [mood, wellness] = await Promise.all([
           getPatientMoodSummary(id).then(normalizeServerSummary).catch(() => null),
           getPatientWellnessSummary(id).catch(() => null),
         ])
-        summaryCache.set(id, { mood, wellness })
+        summaryCache.set(id, { mood, wellness, noConsent: false })
         inFlight.current.delete(id)
       }),
     ).finally(() => {
@@ -80,7 +99,7 @@ export function useDoctorPatients() {
     return () => {
       alive = false
     }
-  }, [patientIds])
+  }, [patientIds, appointments])
 
   // 4. Build the enriched roster: roster metadata + summaries + risk + alerts.
   // Stamp "now" once (lazy init) so risk/alert windows are render-pure.
@@ -89,32 +108,54 @@ export function useDoctorPatients() {
     const base = rosterFromAppointments(appointments)
     return base
       .map((p) => {
-        const s = summaries.get(p.patientId) || {}
+        const consented = p.appointments.some((a) => a.shareConsent === true && (a.status === 'approved' || a.status === 'completed'))
+        const s = consented ? (summaries.get(p.patientId) || {}) : {}
         const mood = s.mood || null
         const wellness = s.wellness || null
-        const risk = computeRisk({ mood, wellness, nowTs })
-        const alerts = deriveAlerts({ patient: p, mood, wellness, nowTs })
+        
+        let risk
+        if (consented) {
+          risk = computeRisk({ mood, wellness, nowTs })
+        } else {
+          risk = {
+            score: null,
+            tier: 'pending',
+            factors: [{ key: 'consent', label: 'Consent Pending', weight: 0 }],
+          }
+        }
+
+        const alerts = consented ? deriveAlerts({ patient: p, mood, wellness, nowTs }) : []
         return {
           ...p,
           mood,
           wellness,
           risk,
           alerts,
-          dominant: dominantEmotion(mood),
-          trendArrow: emotionTrendArrow(mood),
-          wellnessScore: wellness?.wellness_score?.score ?? null,
-          loaded: summaries.has(p.patientId),
+          dominant: consented ? dominantEmotion(mood) : null,
+          trendArrow: consented ? emotionTrendArrow(mood) : null,
+          wellnessScore: consented ? (wellness?.wellness_score?.score ?? null) : null,
+          loaded: consented ? summaries.has(p.patientId) : true,
         }
       })
-      .sort((a, b) => b.risk.score - a.risk.score)
+      .sort((a, b) => {
+        if (a.risk.tier === 'pending' && b.risk.tier !== 'pending') return 1
+        if (a.risk.tier !== 'pending' && b.risk.tier === 'pending') return -1
+        return b.risk.score - a.risk.score
+      })
   }, [appointments, summaries, nowTs])
 
   // 5. Portfolio-level aggregates.
   const stats = useMemo(() => appointmentStats(appointments, nowTs), [appointments, nowTs])
 
   const byTier = useMemo(() => {
-    const groups = { high: [], medium: [], low: [] }
-    for (const p of patients) groups[p.risk.tier].push(p)
+    const groups = { high: [], medium: [], low: [], pending: [] }
+    for (const p of patients) {
+      if (groups[p.risk.tier]) {
+        groups[p.risk.tier].push(p)
+      } else {
+        groups.pending.push(p)
+      }
+    }
     return groups
   }, [patients])
 

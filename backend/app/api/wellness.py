@@ -29,13 +29,13 @@ router = APIRouter(prefix="/api", tags=["wellness"])
 
 
 def _has_appointment(db, doctor_id: str, patient_id: str) -> bool:
-    """Return True only when an active (confirmed or pending) appointment exists between
-    the doctor and the patient. Cancelled/rejected appointments do NOT grant access."""
+    """True when the doctor has at least one approved/completed appointment with consent from the patient."""
     snap = (
         db.collection("appointments")
         .where(filter=FieldFilter("doctorId", "==", doctor_id))
         .where(filter=FieldFilter("patientId", "==", patient_id))
-        .where(filter=FieldFilter("status", "in", ["confirmed", "pending"]))
+        .where(filter=FieldFilter("status", "in", ["approved", "completed"]))
+        .where(filter=FieldFilter("shareConsent", "==", True))
         .limit(1)
         .get()
     )

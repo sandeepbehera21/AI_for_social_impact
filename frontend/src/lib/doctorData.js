@@ -27,6 +27,7 @@ export const RISK_TIERS = {
   high: { key: 'high', label: 'High Risk', color: '#ef4444', dot: '🔴', glow: 'rgba(239,68,68,0.5)' },
   medium: { key: 'medium', label: 'Medium Risk', color: '#f59e0b', dot: '🟠', glow: 'rgba(245,158,11,0.45)' },
   low: { key: 'low', label: 'Low Risk', color: '#22c55e', dot: '🟢', glow: 'rgba(34,197,94,0.4)' },
+  pending: { key: 'pending', label: 'Consent Pending', color: '#9ca3af', dot: '⚪', glow: 'rgba(156,163,175,0.4)' },
 }
 
 /** Map a 0–100 composite risk score to a clinical tier key. */

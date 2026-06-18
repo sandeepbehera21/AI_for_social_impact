@@ -35,6 +35,7 @@ const TABS = [
   { key: 'high', ...RISK_TIERS.high },
   { key: 'medium', ...RISK_TIERS.medium },
   { key: 'low', ...RISK_TIERS.low },
+  { key: 'pending', ...RISK_TIERS.pending },
 ]
 
 export default function PatientsPage() {
@@ -73,7 +74,7 @@ export default function PatientsPage() {
       subtitle="Longitudinal view of every patient under your care, grouped by clinical risk."
     >
       {/* Risk Center summary strip */}
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -282,106 +283,123 @@ function PatientDrawer({ patient: p, nowTs, onClose, onStart, onNotes }) {
           </button>
         </div>
 
-        {/* Risk factors */}
-        {p.risk.factors.length > 0 && (
-          <div className="mb-5 rounded-xl border border-border bg-surface-2 p-4">
-            <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-fg">
-              <AlertTriangle className="h-4 w-4 text-warning" /> Why flagged
-            </h3>
-            <ul className="space-y-1.5">
-              {p.risk.factors.map((f) => (
-                <li key={f.key} className="flex items-center justify-between text-xs text-muted">
-                  <span className="capitalize">{f.label}</span>
-                  <span className="tabular-nums text-faint">{Math.round(f.weight * 100)}%</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Wellness gauge + habit stats */}
-        <div className="mb-5 flex flex-col gap-4 rounded-xl border border-border bg-surface-2 p-4">
-          <div className="flex items-center gap-4">
-            <RadialGauge value={score.score || 0} color={levelMeta.color || 'var(--accent)'} label={levelMeta.label || 'Wellness'} size={104} />
-            <div className="flex-1 space-y-2">
-              <HabitStat icon={Flame} color="#fb923c" label="Day streak" value={sharing.habits === false ? '🔒 Restricted' : (habit?.streak ?? 0)} />
-              <HabitStat icon={Activity} color="#34d399" label="Habit adherence" value={sharing.habits === false ? '🔒 Restricted' : (habit ? `${Math.round(habit.adherence * 100)}%` : '—')} />
-              <HabitStat icon={Target} color="var(--accent)" label="Risk score" value={p.risk.score} />
+        {p.risk.tier === 'pending' ? (
+          <div className="my-auto flex flex-col items-center justify-center p-6 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warning-soft text-warning mb-4">
+              <Lock className="h-8 w-8" />
             </div>
-          </div>
-          {sharing.habits === false && (
-            <div className="text-[10px] text-warning flex items-center gap-1 border-t border-border pt-2 font-medium">
-              <Lock className="h-3.5 w-3.5 shrink-0" /> Patient has restricted sharing for habits &amp; wellness.
-            </div>
-          )}
-        </div>
-
-        {/* Plan adherence */}
-        {sharing.habits === false ? (
-          <div className="mb-5 flex items-center gap-2 rounded-xl border border-dashed border-border bg-surface-2 p-3 text-xs text-muted">
-            <Lock className="h-3.5 w-3.5 text-warning shrink-0" />
-            <span>Patient has restricted sharing for habits &amp; wellness plans.</span>
-          </div>
-        ) : w.plan ? (
-          <div className="mb-5 flex items-center gap-2 rounded-xl border border-border bg-surface-2 p-3 text-sm text-muted">
-            <ListChecks className="h-4 w-4 text-accent" />
-            <span className="font-medium text-fg">{w.plan.title}</span>
-            {w.plan_adherence && (
-              <span className="ml-auto text-xs text-faint">
-                {w.plan_adherence.completed}/{w.plan_adherence.total} tasks
-              </span>
-            )}
-          </div>
-        ) : null}
-
-        {/* Crisis events */}
-        {recentCrises.length > 0 && (
-          <div className="mb-5 rounded-xl border border-danger/30 bg-danger-soft p-3">
-            <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-danger">
-              <Siren className="h-4 w-4" /> Crisis / SOS history (30d)
-            </h3>
-            <ul className="space-y-1 text-xs text-danger">
-              {recentCrises.slice(0, 5).map((e, i) => (
-                <li key={i} className="flex justify-between">
-                  <span>{CRISIS_EVENT_LABELS[e.type] || e.type}</span>
-                  <span className="text-faint">{relativeTime(e.ts)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Mood trends */}
-        <div className="mb-5">
-          <h3 className="mb-2 text-sm font-semibold text-fg">Emotional trend</h3>
-          {sharing.mood === false ? (
-            <div className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted flex items-center justify-center gap-1.5 bg-surface-2">
-              <Lock className="h-4 w-4 text-warning shrink-0" /> Patient has restricted sharing for mood trends.
-            </div>
-          ) : p.mood && p.mood.totalSamples > 0 ? (
-            <MoodTrends summary={p.mood} compact defaultPeriod="weekly" />
-          ) : (
-            <p className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-faint">
-              No mood data shared yet.
+            <h3 className="text-base font-bold text-fg mb-2">Consent Pending</h3>
+            <p className="text-xs text-muted leading-relaxed max-w-xs mb-3">
+              This patient has not yet consented to share their mood history and wellness logs.
             </p>
-          )}
-        </div>
-
-        {/* Recommendations */}
-        {(w.recommendations || []).length > 0 && (
-          <div className="mb-5">
-            <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-fg">
-              <ShieldCheck className="h-4 w-4 text-primary" /> Suggested focus
-            </h3>
-            <ul className="space-y-1.5">
-              {w.recommendations.slice(0, 3).map((r, i) => (
-                <li key={i} className="rounded-lg bg-surface-2 p-2.5 text-xs text-muted">
-                  <span className="font-semibold text-accent">{r.title}</span>
-                  {r.detail && <span className="text-faint"> — {r.detail}</span>}
-                </li>
-              ))}
-            </ul>
+            <p className="text-[11px] text-faint leading-relaxed max-w-xs">
+              Once they click the "Share Health Data" button on their dashboard for your approved consultation, their records will become instantly visible here.
+            </p>
           </div>
+        ) : (
+          <>
+            {/* Risk factors */}
+            {p.risk.factors.length > 0 && (
+              <div className="mb-5 rounded-xl border border-border bg-surface-2 p-4">
+                <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-fg">
+                  <AlertTriangle className="h-4 w-4 text-warning" /> Why flagged
+                </h3>
+                <ul className="space-y-1.5">
+                  {p.risk.factors.map((f) => (
+                    <li key={f.key} className="flex items-center justify-between text-xs text-muted">
+                      <span className="capitalize">{f.label}</span>
+                      <span className="tabular-nums text-faint">{Math.round(f.weight * 100)}%</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Wellness gauge + habit stats */}
+            <div className="mb-5 flex flex-col gap-4 rounded-xl border border-border bg-surface-2 p-4">
+              <div className="flex items-center gap-4">
+                <RadialGauge value={score.score || 0} color={levelMeta.color || 'var(--accent)'} label={levelMeta.label || 'Wellness'} size={104} />
+                <div className="flex-1 space-y-2">
+                  <HabitStat icon={Flame} color="#fb923c" label="Day streak" value={sharing.habits === false ? '🔒 Restricted' : (habit?.streak ?? 0)} />
+                  <HabitStat icon={Activity} color="#34d399" label="Habit adherence" value={sharing.habits === false ? '🔒 Restricted' : (habit ? `${Math.round(habit.adherence * 100)}%` : '—')} />
+                  <HabitStat icon={Target} color="var(--accent)" label="Risk score" value={p.risk.score} />
+                </div>
+              </div>
+              {sharing.habits === false && (
+                <div className="text-[10px] text-warning flex items-center gap-1 border-t border-border pt-2 font-medium">
+                  <Lock className="h-3.5 w-3.5 shrink-0" /> Patient has restricted sharing for habits &amp; wellness.
+                </div>
+              )}
+            </div>
+
+            {/* Plan adherence */}
+            {sharing.habits === false ? (
+              <div className="mb-5 flex items-center gap-2 rounded-xl border border-dashed border-border bg-surface-2 p-3 text-xs text-muted">
+                <Lock className="h-3.5 w-3.5 text-warning shrink-0" />
+                <span>Patient has restricted sharing for habits &amp; wellness plans.</span>
+              </div>
+            ) : w.plan ? (
+              <div className="mb-5 flex items-center gap-2 rounded-xl border border-border bg-surface-2 p-3 text-sm text-muted">
+                <ListChecks className="h-4 w-4 text-accent" />
+                <span className="font-medium text-fg">{w.plan.title}</span>
+                {w.plan_adherence && (
+                  <span className="ml-auto text-xs text-faint">
+                    {w.plan_adherence.completed}/{w.plan_adherence.total} tasks
+                  </span>
+                )}
+              </div>
+            ) : null}
+
+            {/* Crisis events */}
+            {recentCrises.length > 0 && (
+              <div className="mb-5 rounded-xl border border-danger/30 bg-danger-soft p-3">
+                <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-danger">
+                  <Siren className="h-4 w-4" /> Crisis / SOS history (30d)
+                </h3>
+                <ul className="space-y-1 text-xs text-danger">
+                  {recentCrises.slice(0, 5).map((e, i) => (
+                    <li key={i} className="flex justify-between">
+                      <span>{CRISIS_EVENT_LABELS[e.type] || e.type}</span>
+                      <span className="text-faint">{relativeTime(e.ts)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Mood trends */}
+            <div className="mb-5">
+              <h3 className="mb-2 text-sm font-semibold text-fg">Emotional trend</h3>
+              {sharing.mood === false ? (
+                <div className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted flex items-center justify-center gap-1.5 bg-surface-2">
+                  <Lock className="h-4 w-4 text-warning shrink-0" /> Patient has restricted sharing for mood trends.
+                </div>
+              ) : p.mood && p.mood.totalSamples > 0 ? (
+                <MoodTrends summary={p.mood} compact defaultPeriod="weekly" />
+              ) : (
+                <p className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-faint">
+                  No mood data shared yet.
+                </p>
+              )}
+            </div>
+
+            {/* Recommendations */}
+            {(w.recommendations || []).length > 0 && (
+              <div className="mb-5">
+                <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-fg">
+                  <ShieldCheck className="h-4 w-4 text-primary" /> Suggested focus
+                </h3>
+                <ul className="space-y-1.5">
+                  {w.recommendations.slice(0, 3).map((r, i) => (
+                    <li key={i} className="rounded-lg bg-surface-2 p-2.5 text-xs text-muted">
+                      <span className="font-semibold text-accent">{r.title}</span>
+                      {r.detail && <span className="text-faint"> — {r.detail}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </>
         )}
 
         {/* Actions */}

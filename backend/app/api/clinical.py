@@ -454,6 +454,11 @@ def get_patient_clinical_summary(
     db = firebase.firestore_client()
 
     if user.role == "doctor":
+        if not appt.get("shareConsent", False):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Patient has not consented to share clinical details for this appointment.",
+            )
         import time
         db.collection("consent_audit").add({
             "patientId": patient_id,

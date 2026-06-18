@@ -54,7 +54,7 @@ export async function requestAppointment({
   dateTime, // JS Date or ISO string
 }) {
   const iso = dateTime instanceof Date ? dateTime.toISOString() : dateTime
-  const ref = await addDoc(collection(db, 'appointments'), {
+  const docData = {
     patientId: patient.uid,
     patientName: patient.name || patient.email || 'Patient',
     doctorId: doctor.uid,
@@ -63,8 +63,29 @@ export async function requestAppointment({
     status: APPT_STATUS.PENDING,
     channelName: generateChannelName(),
     createdAt: serverTimestamp(),
+  }
+
+  // Wrap Firestore addDoc with a 5-second timeout to handle network blocks gracefully
+  let timeoutId
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error('Booking request timed out. The request has been queued locally but may not have reached the server yet. Please check your network connection or Brave Shields.'))
+    }, 5000)
   })
-  return ref.id
+
+  try {
+    const ref = await Promise.race([
+      addDoc(collection(db, 'appointments'), docData).then((res) => {
+        clearTimeout(timeoutId)
+        return res
+      }),
+      timeoutPromise
+    ])
+    return ref.id
+  } catch (err) {
+    clearTimeout(timeoutId)
+    throw err
+  }
 }
 
 /** Move an appointment to a new lifecycle status. */
