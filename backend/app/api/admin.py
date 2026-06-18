@@ -51,6 +51,11 @@ class AdminUserItem(BaseModel):
     verifiedAt: Optional[int] = None
     status: Optional[str] = None
     registrationDate: Optional[Any] = None
+    specialization: Optional[str] = None
+    licenseNumber: Optional[str] = None
+    experience: Optional[int] = None
+    clinicAffiliation: Optional[str] = None
+    bio: Optional[str] = None
 
 class AdminUserListResponse(BaseModel):
     users: List[AdminUserItem]
@@ -157,7 +162,12 @@ def list_users(request: Request, admin: CurrentUser = Depends(require_admin)) ->
             verifiedBy=d.get("verifiedBy"),
             verifiedAt=d.get("verifiedAt"),
             status=d.get("status", "active"),
-            registrationDate=d.get("registrationDate")
+            registrationDate=d.get("registrationDate"),
+            specialization=d.get("specialization"),
+            licenseNumber=d.get("licenseNumber"),
+            experience=d.get("experience"),
+            clinicAffiliation=d.get("clinicAffiliation"),
+            bio=d.get("bio")
         ))
         
     return AdminUserListResponse(users=user_items)
