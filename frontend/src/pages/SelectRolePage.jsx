@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Stethoscope, User, Loader2, Edit3 } from 'lucide-react'
+import { Stethoscope, User, Loader2, Edit3, FileText, TrendingUp } from 'lucide-react'
 import PageTransition from '../components/PageTransition.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { ROLES, dashboardPathFor } from '../lib/roles.js'
@@ -14,16 +14,37 @@ export default function SelectRolePage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
+  // Doctor-specific fields
+  const [specialization, setSpecialization] = useState('')
+  const [licenseNumber, setLicenseNumber] = useState('')
+  const [experience, setExperience] = useState('')
+  const [clinicAffiliation, setClinicAffiliation] = useState('')
+  const [bio, setBio] = useState('')
+
   const onSubmit = async (e) => {
-    e.preventDefault()
-    if (!selectedRole) {
-      setError('Please choose a portal to enter (Patient or Doctor).')
-      return
+    if (selectedRole === ROLES.DOCTOR) {
+      if (!specialization) {
+        setError('Please select your specialization.')
+        return
+      }
+      const expNum = parseInt(experience, 10)
+      if (isNaN(expNum) || expNum < 0 || expNum > 60) {
+        setError('Please enter a valid years of experience (0-60).')
+        return
+      }
     }
     setError('')
     setBusy(true)
     try {
-      await assignGoogleRole(user, selectedRole, name)
+      const extraFields = selectedRole === ROLES.DOCTOR ? {
+        specialization,
+        licenseNumber: licenseNumber.trim(),
+        experience: parseInt(experience, 10),
+        clinicAffiliation: clinicAffiliation.trim(),
+        bio: bio.trim(),
+      } : {}
+
+      await assignGoogleRole(user, selectedRole, name, extraFields)
       navigate(dashboardPathFor(selectedRole), { replace: true })
     } catch (err) {
       setError(err.message || 'Failed to complete profile configuration.')
@@ -87,6 +108,81 @@ export default function SelectRolePage() {
             className="w-full bg-transparent py-3 text-sm text-fg outline-none placeholder:text-faint"
           />
         </div>
+
+        {selectedRole === ROLES.DOCTOR && (
+          <div className="space-y-4 pt-4 border-t border-border/40 text-left animate-fade-in">
+            <div className="text-xs font-bold text-accent uppercase tracking-wider text-center">Clinician Profile Details</div>
+            
+            {/* Specialization */}
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+              <select
+                required
+                value={specialization}
+                onChange={(e) => setSpecialization(e.target.value)}
+                className="w-full bg-transparent py-3 text-sm text-fg outline-none border-none cursor-pointer"
+              >
+                <option value="" disabled>Select Specialization</option>
+                <option value="Psychiatrist">Psychiatrist (MD)</option>
+                <option value="Clinical Psychologist">Clinical Psychologist</option>
+                <option value="Licensed Counselor">Licensed Counselor</option>
+                <option value="Therapist">Therapist</option>
+              </select>
+            </div>
+
+            {/* License Number */}
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+              <FileText className="h-4 w-4 shrink-0 text-faint" />
+              <input
+                type="text"
+                required
+                placeholder="Medical License / Registration Number"
+                value={licenseNumber}
+                onChange={(e) => setLicenseNumber(e.target.value)}
+                className="w-full bg-transparent py-3 text-sm text-fg outline-none placeholder:text-faint"
+              />
+            </div>
+
+            {/* Experience */}
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+              <TrendingUp className="h-4 w-4 shrink-0 text-faint" />
+              <input
+                type="number"
+                required
+                min="0"
+                max="60"
+                placeholder="Years of Experience"
+                value={experience}
+                onChange={(e) => setExperience(e.target.value)}
+                className="w-full bg-transparent py-3 text-sm text-fg outline-none placeholder:text-faint"
+              />
+            </div>
+
+            {/* Clinic Affiliation */}
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+              <Edit3 className="h-4 w-4 shrink-0 text-faint" />
+              <input
+                type="text"
+                required
+                placeholder="Clinic / Hospital Affiliation"
+                value={clinicAffiliation}
+                onChange={(e) => setClinicAffiliation(e.target.value)}
+                className="w-full bg-transparent py-3 text-sm text-fg outline-none placeholder:text-faint"
+              />
+            </div>
+
+            {/* Bio */}
+            <div className="rounded-lg border border-border bg-surface-2 px-3 py-2 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+              <textarea
+                placeholder="Tell patients about your expertise and care approach (Bio)..."
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                rows="3"
+                className="w-full bg-transparent text-sm text-fg outline-none resize-none placeholder:text-faint"
+                required
+              />
+            </div>
+          </div>
+        )}
 
         <button
           type="submit"

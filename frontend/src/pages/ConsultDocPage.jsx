@@ -398,11 +398,19 @@ export default function ConsultDocPage() {
                           >
                             {(d.name || d.email || 'D')[0].toUpperCase()}
                           </div>
-                          <div className="min-w-0">
+                          <div className="min-w-0 text-left">
                             <div className="truncate font-semibold text-fg">
                               Dr. {d.name || d.email}
                             </div>
-                            <div className="truncate text-xs text-faint">{d.email}</div>
+                            {d.specialization && (
+                              <div className="text-[10px] font-bold text-accent">
+                                {d.specialization}
+                              </div>
+                            )}
+                            <div className="truncate text-xxs text-faint">
+                              {d.experience !== undefined && d.experience !== null ? `${d.experience} yrs exp ` : ''}
+                              {d.clinicAffiliation ? `• ${d.clinicAffiliation}` : ''}
+                            </div>
                           </div>
                         </div>
                         {active && (
@@ -446,18 +454,34 @@ export default function ConsultDocPage() {
                 >
                   {(selectedDoctor.name || selectedDoctor.email || 'D')[0].toUpperCase()}
                 </div>
-                <div>
-                  <div className="font-semibold text-fg">
+                <div className="flex-1 min-w-0 text-left">
+                  <div className="font-bold text-fg text-base">
                     Dr. {selectedDoctor.name || selectedDoctor.email}
                   </div>
-                  {(() => {
-                    const r = doctorRatings.get(selectedDoctor.uid)
-                    return r?.ratingCount > 0 ? (
-                      <StarRating value={r.avgRating} size="sm" showValue count={r.ratingCount} />
-                    ) : (
-                      <span className="text-xs text-faint">No reviews yet</span>
-                    )
-                  })()}
+                  {selectedDoctor.specialization && (
+                    <div className="text-xs font-bold text-accent mt-0.5">
+                      {selectedDoctor.specialization}
+                    </div>
+                  )}
+                  <div className="text-xxs text-muted mt-0.5">
+                    {selectedDoctor.experience !== undefined && selectedDoctor.experience !== null ? `${selectedDoctor.experience} Years Experience ` : ''}
+                    {selectedDoctor.clinicAffiliation ? `| ${selectedDoctor.clinicAffiliation}` : ''}
+                  </div>
+                  {selectedDoctor.bio && (
+                    <p className="mt-2 text-xs text-muted italic leading-relaxed border-t border-border/40 pt-2">
+                      "{selectedDoctor.bio}"
+                    </p>
+                  )}
+                  <div className="mt-2.5 flex items-center">
+                    {(() => {
+                      const r = doctorRatings.get(selectedDoctor.uid)
+                      return r?.ratingCount > 0 ? (
+                        <StarRating value={r.avgRating} size="sm" showValue count={r.ratingCount} />
+                      ) : (
+                        <span className="text-xs text-faint">No reviews yet</span>
+                      )
+                    })()}
+                  </div>
                 </div>
               </div>
             ) : (

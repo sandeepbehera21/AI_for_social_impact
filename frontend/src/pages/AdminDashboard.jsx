@@ -622,6 +622,25 @@ export default function AdminDashboard() {
                             <td className="p-4">
                               <div className="font-bold text-fg">{u.name || 'Anonymous User'}</div>
                               <div className="text-xxs text-muted">{u.email || '—'}</div>
+                              {u.role === 'doctor' && (
+                                <div className="mt-1.5 max-w-md rounded-lg border border-border bg-surface-2 p-2 text-[10px] text-muted leading-relaxed shadow-xxs">
+                                  <div className="flex flex-wrap gap-x-2 gap-y-0.5">
+                                    <span><strong>Specialty:</strong> {u.specialization || '—'}</span>
+                                    <span className="text-border">•</span>
+                                    <span><strong>License:</strong> {u.licenseNumber || '—'}</span>
+                                  </div>
+                                  <div className="flex flex-wrap gap-x-2 gap-y-0.5 mt-0.5">
+                                    <span><strong>Exp:</strong> {u.experience !== undefined && u.experience !== null ? `${u.experience} Years` : '—'}</span>
+                                    <span className="text-border">•</span>
+                                    <span><strong>Affiliation:</strong> {u.clinicAffiliation || '—'}</span>
+                                  </div>
+                                  {u.bio && (
+                                    <div className="mt-1 border-t border-border/60 pt-1 italic text-xxs text-muted-strong max-h-12 overflow-y-auto">
+                                      "{u.bio}"
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </td>
                             <td className="p-4 text-xxs text-muted font-mono">{u.uid}</td>
                             <td className="p-4">

@@ -68,7 +68,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   // ── Email / password sign-up ─────────────────────────────────────────────
-  const signUp = async ({ name, email, password, role }) => {
+  const signUp = async ({ name, email, password, role, ...extraFields }) => {
     if (role !== ROLES.PATIENT && role !== ROLES.DOCTOR) {
       throw new Error('Please select a role (Patient or Doctor).')
     }
@@ -81,6 +81,7 @@ export function AuthProvider({ children }) {
       name: name || '',
       role,
       registrationDate: serverTimestamp(),
+      ...extraFields,
       ...(role === ROLES.DOCTOR ? { verified: false } : {}),
       ...(role === ROLES.PATIENT ? { onboarded: false } : {}),
     }
@@ -127,7 +128,7 @@ export function AuthProvider({ children }) {
   }
 
   // ── Assign role to new Google user ───────────────────────────────────────
-  const assignGoogleRole = async (fbUser, role, name) => {
+  const assignGoogleRole = async (fbUser, role, name, extraFields = {}) => {
     if (role !== ROLES.PATIENT && role !== ROLES.DOCTOR) {
       throw new Error('Please select a role (Patient or Doctor).')
     }
@@ -137,6 +138,7 @@ export function AuthProvider({ children }) {
       name: name || fbUser.displayName || '',
       role,
       registrationDate: serverTimestamp(),
+      ...extraFields,
       ...(role === ROLES.DOCTOR ? { verified: false } : {}),
       ...(role === ROLES.PATIENT ? { onboarded: false } : {}),
     }

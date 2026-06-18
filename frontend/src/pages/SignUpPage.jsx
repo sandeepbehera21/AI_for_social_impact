@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Loader2, Stethoscope, User, Mail, Lock, UserRound } from 'lucide-react'
+import { Loader2, Stethoscope, User, Mail, Lock, UserRound, FileText, TrendingUp, Edit3 } from 'lucide-react'
 import PageTransition from '../components/PageTransition.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { ROLES, dashboardPathFor } from '../lib/roles.js'
@@ -32,6 +32,13 @@ export default function SignUpPage() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
+  // Doctor-specific fields
+  const [specialization, setSpecialization] = useState('')
+  const [licenseNumber, setLicenseNumber] = useState('')
+  const [experience, setExperience] = useState('')
+  const [clinicAffiliation, setClinicAffiliation] = useState('')
+  const [bio, setBio] = useState('')
+
   // After Google redirect returns, user + role are set by AuthContext.
   // New Google users have no role yet → go to /select-role.
   // Returning Google users already have a role → go to their dashboard.
@@ -54,9 +61,35 @@ export default function SignUpPage() {
       return
     }
 
+    if (selectedRole === ROLES.DOCTOR) {
+      if (!specialization) {
+        setError('Please select your specialization.')
+        return
+      }
+      const expNum = parseInt(experience, 10)
+      if (isNaN(expNum) || expNum < 0 || expNum > 60) {
+        setError('Please enter a valid years of experience (0-60).')
+        return
+      }
+    }
+
     setBusy(true)
     try {
-      await signUp({ name: name.trim().slice(0, 100), email, password, role: selectedRole })
+      const extraFields = selectedRole === ROLES.DOCTOR ? {
+        specialization,
+        licenseNumber: licenseNumber.trim(),
+        experience: parseInt(experience, 10),
+        clinicAffiliation: clinicAffiliation.trim(),
+        bio: bio.trim(),
+      } : {}
+
+      await signUp({
+        name: name.trim().slice(0, 100),
+        email,
+        password,
+        role: selectedRole,
+        ...extraFields
+      })
       navigate(dashboardPathFor(selectedRole), { replace: true })
     } catch (err) {
       setError(authErrorMessage(err))
@@ -153,6 +186,72 @@ export default function SignUpPage() {
             minLength={6}
             required
           />
+
+          {selectedRole === ROLES.DOCTOR && (
+            <div className="space-y-4 pt-4 border-t border-border/40 text-left">
+              <div className="text-xs font-bold text-accent uppercase tracking-wider text-center">Clinician Profile Details</div>
+              
+              {/* Specialization */}
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+                <select
+                  required
+                  value={specialization}
+                  onChange={(e) => setSpecialization(e.target.value)}
+                  className="w-full bg-transparent py-3 text-sm text-fg outline-none border-none cursor-pointer"
+                >
+                  <option value="" disabled>Select Specialization</option>
+                  <option value="Psychiatrist">Psychiatrist (MD)</option>
+                  <option value="Clinical Psychologist">Clinical Psychologist</option>
+                  <option value="Licensed Counselor">Licensed Counselor</option>
+                  <option value="Therapist">Therapist</option>
+                </select>
+              </div>
+
+              {/* License Number */}
+              <Field
+                icon={FileText}
+                type="text"
+                placeholder="Medical License / Registration Number"
+                value={licenseNumber}
+                onChange={setLicenseNumber}
+                required
+              />
+
+              {/* Experience */}
+              <Field
+                icon={TrendingUp}
+                type="number"
+                placeholder="Years of Experience"
+                value={experience}
+                onChange={setExperience}
+                min="0"
+                max="60"
+                required
+              />
+
+              {/* Clinic Affiliation */}
+              <Field
+                icon={Edit3}
+                type="text"
+                placeholder="Clinic / Hospital Affiliation"
+                value={clinicAffiliation}
+                onChange={setClinicAffiliation}
+                required
+              />
+
+              {/* Bio */}
+              <div className="rounded-lg border border-border bg-surface-2 px-3 py-2 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+                <textarea
+                  placeholder="Tell patients about your expertise and care approach (Bio)..."
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  rows="3"
+                  className="w-full bg-transparent text-sm text-fg outline-none resize-none placeholder:text-faint"
+                  required
+                />
+              </div>
+            </div>
+          )}
 
           <button
             type="submit"
