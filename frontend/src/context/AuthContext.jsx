@@ -14,8 +14,7 @@ import {
   updateProfile,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   sendEmailVerification,
 } from 'firebase/auth'
 import { doc, getDoc, serverTimestamp, setDoc, onSnapshot } from 'firebase/firestore'
@@ -31,44 +30,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)   // resolving initial auth state
   const [googleError, setGoogleError] = useState(null) // redirect sign-in error
 
-  // Track whether the redirect-result check has finished so we only call
-  // setLoading(false) after BOTH the redirect check AND the first auth-state
-  // event have resolved.
-  const redirectDone = useRef(false)
-  const authEventDone = useRef(false)
-
-  const tryFinishLoading = () => {
-    if (redirectDone.current && authEventDone.current) {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
-    // ── 1. Check for a pending Google redirect result ──────────────────────
-    // Must be called on every page load so Firebase can process the OAuth
-    // callback. Resolves to null when there is no pending redirect.
-    getRedirectResult(auth)
-      .then(async (result) => {
-        if (result?.user) {
-          // Redirect succeeded — onAuthStateChanged below will also fire with
-          // this user; we just make sure the error state is cleared.
-          setGoogleError(null)
-        }
-      })
-      .catch((err) => {
-        // auth/no-auth-event = no redirect was pending (normal page load).
-        // Any other code is a real failure we must surface to the user.
-        if (err?.code && err.code !== 'auth/no-auth-event') {
-          console.error('[auth] Google redirect failed:', err.code, err.message)
-          setGoogleError(err)
-        }
-      })
-      .finally(() => {
-        redirectDone.current = true
-        tryFinishLoading()
-      })
-
-    // ── 2. Subscribe to Firebase auth-state changes ────────────────────────
+    // ── Subscribe to Firebase auth-state changes ────────────────────────
     let profileUnsub = null
 
     const unsub = onAuthStateChanged(auth, (fbUser) => {
@@ -84,20 +47,17 @@ export function AuthProvider({ children }) {
           doc(db, 'users', fbUser.uid),
           (snap) => {
             setProfile(snap.exists() ? { uid: fbUser.uid, ...snap.data() } : null)
-            authEventDone.current = true
-            tryFinishLoading()
+            setLoading(false)
           },
           (err) => {
             console.error('[auth] failed to subscribe to Firestore profile', err)
             setProfile(null)
-            authEventDone.current = true
-            tryFinishLoading()
+            setLoading(false)
           }
         )
       } else {
         setProfile(null)
-        authEventDone.current = true
-        tryFinishLoading()
+        setLoading(false)
       }
     })
 
@@ -147,17 +107,23 @@ export function AuthProvider({ children }) {
     return signOut(auth)
   }
 
-  // ── Google Sign-In (redirect flow) ───────────────────────────────────────
+  // ── Google Sign-In (popup flow) ──────────────────────────────────────────
   /**
-   * Initiates Google sign-in via full-page redirect.
-   * The browser navigates to Google's OAuth page; the result is processed on
-   * the NEXT page load via getRedirectResult (step 1 above).
-   * After the redirect returns, onAuthStateChanged fires → user/profile are set
+   * Initiates Google sign-in via a popup.
+   * After the popup succeeds, onAuthStateChanged fires → user/profile are set
    * → the calling page's useEffect navigates to the correct destination.
    */
   const signInWithGoogle = async () => {
     setGoogleError(null)
-    await signInWithRedirect(auth, googleProvider)
+    try {
+      await signInWithPopup(auth, googleProvider)
+    } catch (err) {
+      if (err?.code !== 'auth/popup-closed-by-user') {
+        console.error('[auth] Google popup failed:', err.code, err.message)
+        setGoogleError(err)
+      }
+      throw err
+    }
   }
 
   // ── Assign role to new Google user ───────────────────────────────────────

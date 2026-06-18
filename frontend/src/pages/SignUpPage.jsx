@@ -68,8 +68,8 @@ export default function SignUpPage() {
     setError('')
     setBusy(true)
     try {
-      // signInWithRedirect navigates the browser to Google — this function
-      // never returns. Navigation after auth is handled by the useEffect above.
+      // signInWithGoogle opens a popup for Google auth.
+      // Navigation after auth is handled by the useEffect above.
       await signInWithGoogle()
     } catch (err) {
       setError(authErrorMessage(err))
