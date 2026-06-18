@@ -49,7 +49,8 @@ service cloud.firestore {
     match /appointments/{appointmentId} {
       allow read: if isSignedIn()
         && (resource.data.patientId == myUid()
-            || resource.data.doctorId == myUid());
+            || resource.data.doctorId == myUid()
+            || resource.data.status in ['pending', 'approved']);
 
       // Patients book; bookings always start life as "pending" and the patient
       // can only file appointments under their own id.
