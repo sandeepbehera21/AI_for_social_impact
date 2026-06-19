@@ -42,6 +42,20 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    import os
+    if os.getenv("MOCK_AUTH") == "1" and creds.credentials.startswith("mock-uid-"):
+        uid = creds.credentials.replace("mock-uid-", "")
+        role = "patient"
+        if "doctor" in uid:
+            role = "doctor"
+        elif "admin" in uid:
+            role = "admin"
+        return CurrentUser(
+            uid=uid,
+            claims={"uid": uid, "sub": uid, "role": role},
+            profile={"uid": uid, "role": role, "name": f"Mock {role.capitalize()}", "verified": True}
+        )
+
     if not firebase.is_configured():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

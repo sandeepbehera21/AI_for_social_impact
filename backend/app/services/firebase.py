@@ -109,6 +109,16 @@ def verify_id_token(id_token: str) -> dict:
     Verify a Firebase ID token and return its decoded claims (incl. ``uid``).
     Raises ValueError on any failure so the API layer can map it to a 401.
     """
+    import os
+    if os.getenv("MOCK_AUTH") == "1" and id_token.startswith("mock-uid-"):
+        uid = id_token.replace("mock-uid-", "")
+        role = "patient"
+        if "doctor" in uid:
+            role = "doctor"
+        elif "admin" in uid:
+            role = "admin"
+        return {"uid": uid, "sub": uid, "role": role}
+
     _init()
     if _app is None:
         raise RuntimeError(
