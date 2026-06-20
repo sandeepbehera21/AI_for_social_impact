@@ -116,7 +116,7 @@ export default function PatientDashboard() {
 
   // ── Appointments & Notifications ───────────────────────────────────────────
   const [appointments, setAppointments] = useState([])
-  const [userNotifications, setUserNotifications] = useState([])
+  const [userNotifications, setUserNotifications] = useState(null)
 
   useEffect(() => {
     if (!profile?.uid) return
@@ -124,7 +124,10 @@ export default function PatientDashboard() {
   }, [profile?.uid])
 
   useEffect(() => {
-    if (!profile?.uid) return
+    if (!profile?.uid) {
+      setUserNotifications(null)
+      return
+    }
     return subscribeNotifications(profile.uid, setUserNotifications, () => {})
   }, [profile?.uid])
 
@@ -225,7 +228,7 @@ export default function PatientDashboard() {
 
   // Trigger automatic generation of unread reminders based on patient's current signals
   useEffect(() => {
-    if (!profile?.uid || !wellnessSignals) return
+    if (!profile?.uid || !wellnessSignals || !userNotifications) return
     const runCheck = async () => {
       try {
         await checkAndGenerateNotifications(

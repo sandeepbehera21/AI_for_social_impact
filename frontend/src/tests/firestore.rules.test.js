@@ -275,4 +275,103 @@ describe('Firestore Security Rules', () => {
       }));
     });
   });
+
+  // ---- 5. Notifications (/notifications/{notifId}) ----
+  describe('Notifications', () => {
+    it('allows a user to create a notification addressed to themselves', async () => {
+      const db = getDb({ uid: 'patient_1' });
+      const notifRef = doc(db, 'notifications/notif_1');
+      await assertSucceeds(setDoc(notifRef, {
+        userId: 'patient_1',
+        type: 'habit_reminder',
+        title: 'Habit Reminder',
+        read: false,
+        ts: Date.now()
+      }));
+    });
+
+    it('prevents a user from creating a notification addressed to someone else', async () => {
+      const db = getDb({ uid: 'patient_1' });
+      const notifRef = doc(db, 'notifications/notif_2');
+      await assertFails(setDoc(notifRef, {
+        userId: 'patient_2',
+        type: 'habit_reminder',
+        title: 'Habit Reminder',
+        read: false,
+        ts: Date.now()
+      }));
+    });
+
+    it('allows a user to read their own notifications', async () => {
+      const db = getDb({ uid: 'patient_1' });
+      const notifRef = doc(db, 'notifications/notif_1');
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const adminDb = context.firestore();
+        await setDoc(doc(adminDb, 'notifications/notif_1'), {
+          userId: 'patient_1',
+          type: 'habit_reminder',
+          read: false
+        });
+      });
+      await assertSucceeds(getDoc(notifRef));
+    });
+
+    it('prevents a user from reading another user\'s notifications', async () => {
+      const db = getDb({ uid: 'patient_2' });
+      const notifRef = doc(db, 'notifications/notif_1');
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const adminDb = context.firestore();
+        await setDoc(doc(adminDb, 'notifications/notif_1'), {
+          userId: 'patient_1',
+          type: 'habit_reminder',
+          read: false
+        });
+      });
+      await assertFails(getDoc(notifRef));
+    });
+
+    it('allows a user to update only the read and readAt fields of their own notification', async () => {
+      const db = getDb({ uid: 'patient_1' });
+      const notifRef = doc(db, 'notifications/notif_1');
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const adminDb = context.firestore();
+        await setDoc(doc(adminDb, 'notifications/notif_1'), {
+          userId: 'patient_1',
+          type: 'habit_reminder',
+          read: false,
+          ts: 1000
+        });
+      });
+
+      // Update read and readAt
+      await assertSucceeds(updateDoc(notifRef, {
+        read: true,
+        readAt: Date.now()
+      }));
+    });
+
+    it('prevents a user from updating fields other than read/readAt of their own notification', async () => {
+      const db = getDb({ uid: 'patient_1' });
+      const notifRef = doc(db, 'notifications/notif_1');
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const adminDb = context.firestore();
+        await setDoc(doc(adminDb, 'notifications/notif_1'), {
+          userId: 'patient_1',
+          type: 'habit_reminder',
+          read: false,
+          ts: 1000
+        });
+      });
+
+      // Update ts
+      await assertFails(updateDoc(notifRef, {
+        ts: Date.now()
+      }));
+
+      // Update details
+      await assertFails(updateDoc(notifRef, {
+        title: 'New Title'
+      }));
+    });
+  });
 });
