@@ -43,6 +43,7 @@ export function AuthProvider({ children }) {
       }
 
       if (fbUser) {
+        setLoading(true)
         profileUnsub = onSnapshot(
           doc(db, 'users', fbUser.uid),
           (snap) => {
