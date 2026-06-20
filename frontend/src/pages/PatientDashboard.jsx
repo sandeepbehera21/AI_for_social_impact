@@ -260,14 +260,19 @@ export default function PatientDashboard() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <PageTransition className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      {/* ── Header ── */}
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-accent">
-          Patient Dashboard
-        </h1>
-        <p className="mt-1 text-muted">
-          Welcome{profile?.name ? `, ${profile.name}` : ''}. Review your self-care workspaces, active plans, and mental health metrics.
-        </p>
+      {/* ── Welcome Header Card ── */}
+      <header className="mb-8 overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-r from-primary-soft/10 via-surface-2 to-surface p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
+        <div>
+          <h1 className="text-2xl font-extrabold text-accent">
+            Welcome to MindEase{profile?.name ? `, ${profile.name}` : ''}!
+          </h1>
+          <p className="mt-1.5 text-xs text-muted max-w-xl leading-relaxed">
+            We are glad you are here. Review your self-care workspaces, active plans, and mental health metrics to support your wellness journey.
+          </p>
+        </div>
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary shadow-inner">
+          <BrainCircuit className="h-6 w-6" />
+        </div>
       </header>
 
       {/* Email Verification Alert Banner */}
