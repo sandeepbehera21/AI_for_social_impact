@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Shield,
   Check,
+  AlertTriangle,
 } from 'lucide-react'
 import PageTransition from '../components/PageTransition.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
@@ -69,6 +70,31 @@ export default function ConsultDocPage() {
   const [waitlistedSlots, setWaitlistedSlots] = useState([])
   const [waitlistNotifications, setWaitlistNotifications] = useState([])
   const [loadingSlots, setLoadingSlots] = useState(false)
+
+  const slotsForDoctor = useMemo(() => {
+    if (!selectedDoctor) return []
+    const start = selectedDoctor.startHour !== undefined ? selectedDoctor.startHour : 9
+    const end = selectedDoctor.endHour !== undefined ? selectedDoctor.endHour : 17
+    const duration = selectedDoctor.slotDuration !== undefined ? selectedDoctor.slotDuration : 30
+    return dayTimeSlots(start, end, duration)
+  }, [selectedDoctor])
+
+  const isDoctorAvailableOnDay = useMemo(() => {
+    if (!selectedDoctor || !date) return true
+    const parts = date.split('-')
+    if (parts.length !== 3) return true
+    const d = new Date(parts[0], parts[1] - 1, parts[2])
+    const dayOfWeek = d.getDay() // 0 = Sun, 1 = Mon, ..., 6 = Sat
+    const workingDays = selectedDoctor.workingDays || [1, 2, 3, 4, 5]
+    return workingDays.includes(dayOfWeek)
+  }, [selectedDoctor, date])
+
+  const doctorWorkingDaysText = useMemo(() => {
+    if (!selectedDoctor) return ''
+    const workingDays = selectedDoctor.workingDays || [1, 2, 3, 4, 5]
+    const labels = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays']
+    return workingDays.map((d) => labels[d]).join(', ')
+  }, [selectedDoctor])
 
   // Fetch booked slots for the selected doctor on the selected date
   useEffect(() => {
@@ -373,7 +399,7 @@ export default function ConsultDocPage() {
             </div>
           ) : doctors.length === 0 ? (
             <p className="text-sm text-muted">
-              No doctors have registered yet.
+              No doctors are currently online/available.
             </p>
           ) : (
             <ul className="space-y-3">
@@ -505,72 +531,90 @@ export default function ConsultDocPage() {
 
           {/* Time slots */}
           <label className="mb-2 block text-sm font-medium text-muted">Time slot</label>
-          <div className="mb-6 grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {SLOTS.map((s) => {
-              const isBooked = bookedSlots.includes(s)
-              const isWaitlisted = waitlistedSlots.includes(s)
-
-              let btnClass = 'border-border text-muted hover:border-accent'
-              if (slot === s) {
-                btnClass = 'border-accent bg-accent-soft font-semibold text-accent'
-              } else if (isBooked) {
-                btnClass = 'border-warning/45 text-warning bg-warning/5 hover:border-warning'
-              }
-
-              return (
-                <button
-                  key={s}
-                  onClick={() => setSlot(s)}
-                  title={isBooked ? (isWaitlisted ? 'You are waitlisted for this slot' : 'Slot is booked - click to join waitlist') : ''}
-                  className={`rounded-lg border py-2 text-sm transition flex flex-col items-center justify-center cursor-pointer ${btnClass}`}
-                >
-                  <span>{s}</span>
-                  {isBooked && (
-                    <span className="text-[8px] font-semibold uppercase tracking-wider opacity-80">
-                      {isWaitlisted ? 'Waitlisted' : 'Full'}
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Custom Time Slot Picker */}
-          <div className="mb-6 rounded-xl border border-dashed border-border p-4 bg-surface-2/30">
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-accent" />
-              Or Choose a Custom Time (For Testing)
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="time"
-                value={slot && !SLOTS.includes(slot) ? slot : ''}
-                onChange={(e) => {
-                  const val = e.target.value
-                  if (val) setSlot(val)
-                }}
-                className="flex-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-fg outline-none focus:border-accent"
-              />
-              {slot && !SLOTS.includes(slot) && (
-                <button
-                  onClick={() => setSlot('')}
-                  className="rounded-lg border border-danger/30 bg-danger-soft px-3 py-2 text-xs font-semibold text-danger hover:bg-danger hover:text-white transition cursor-pointer"
-                >
-                  Clear Custom
-                </button>
-              )}
+          
+          {!isDoctorAvailableOnDay ? (
+            <div className="mb-6 rounded-xl border border-warning/30 bg-warning-soft/10 p-4 text-center text-sm text-warning flex items-start gap-2.5">
+              <AlertTriangle className="h-5 w-5 shrink-0 text-warning mt-0.5" />
+              <div className="text-left">
+                <div className="font-bold">Not Available on this Day</div>
+                <div className="text-xs text-muted mt-1 leading-relaxed">
+                  Dr. {selectedDoctor.name || selectedDoctor.email} is not scheduled to work on this day.
+                </div>
+                <div className="text-xs font-semibold text-accent mt-2">
+                  Available days: {doctorWorkingDaysText || 'Mon-Fri'}
+                </div>
+              </div>
             </div>
-            {slot && !SLOTS.includes(slot) && (
-              <p className="mt-2 text-xs text-accent font-medium animate-pulse">
-                Selected Custom Slot: <span className="font-bold underline">{slot}</span>
-              </p>
-            )}
-          </div>
+          ) : (
+            <>
+              <div className="mb-6 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {slotsForDoctor.map((s) => {
+                  const isBooked = bookedSlots.includes(s)
+                  const isWaitlisted = waitlistedSlots.includes(s)
+
+                  let btnClass = 'border-border text-muted hover:border-accent'
+                  if (slot === s) {
+                    btnClass = 'border-accent bg-accent-soft font-semibold text-accent'
+                  } else if (isBooked) {
+                    btnClass = 'border-warning/45 text-warning bg-warning/5 hover:border-warning'
+                  }
+
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => setSlot(s)}
+                      title={isBooked ? (isWaitlisted ? 'You are waitlisted for this slot' : 'Slot is booked - click to join waitlist') : ''}
+                      className={`rounded-lg border py-2 text-sm transition flex flex-col items-center justify-center cursor-pointer ${btnClass}`}
+                    >
+                      <span>{s}</span>
+                      {isBooked && (
+                        <span className="text-[8px] font-semibold uppercase tracking-wider opacity-80">
+                          {isWaitlisted ? 'Waitlisted' : 'Full'}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Custom Time Slot Picker */}
+              <div className="mb-6 rounded-xl border border-dashed border-border p-4 bg-surface-2/30">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-accent" />
+                  Or Choose a Custom Time (For Testing)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="time"
+                    value={slot && !slotsForDoctor.includes(slot) ? slot : ''}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val) setSlot(val)
+                    }}
+                    className="flex-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+                  />
+                  {slot && !slotsForDoctor.includes(slot) && (
+                    <button
+                      onClick={() => setSlot('')}
+                      className="rounded-lg border border-danger/30 bg-danger-soft px-3 py-2 text-xs font-semibold text-danger hover:bg-danger hover:text-white transition cursor-pointer"
+                    >
+                      Clear Custom
+                    </button>
+                  )}
+                </div>
+                {slot && !slotsForDoctor.includes(slot) && (
+                  <p className="mt-2 text-xs text-accent font-medium animate-pulse">
+                    Selected Custom Slot: <span className="font-bold underline">{slot}</span>
+                  </p>
+                )}
+              </div>
+            </>
+          )}
 
           {/* Book button */}
           <button
             onClick={handleBookingAction}
-            disabled={booking || !selectedDoctor || !slot || (bookedSlots.includes(slot) && waitlistedSlots.includes(slot))}
+            disabled={booking || !selectedDoctor || !slot || !isDoctorAvailableOnDay || (bookedSlots.includes(slot) && waitlistedSlots.includes(slot))}
             className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-primary-fg shadow-sm transition hover:bg-primary-hover disabled:opacity-40 cursor-pointer"
           >
             {booking ? (

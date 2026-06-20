@@ -39,7 +39,11 @@ export function generateChannelName() {
 
 /** One-shot fetch of every registered doctor (for the patient's picker). */
 export async function listDoctors() {
-  const q = query(collection(db, 'users'), where('role', '==', 'doctor'))
+  const q = query(
+    collection(db, 'users'),
+    where('role', '==', 'doctor'),
+    where('available', '==', true)
+  )
   const snap = await getDocs(q)
   return snap.docs.map((d) => ({ uid: d.id, ...d.data() }))
 }

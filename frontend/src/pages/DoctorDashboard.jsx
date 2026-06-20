@@ -28,6 +28,7 @@ import CompleteSessionModal from '../components/CompleteSessionModal.jsx'
 import CountdownJoinButton from '../components/CountdownJoinButton.jsx'
 import DoctorLayout from '../components/DoctorLayout.jsx'
 import DoctorProfileCard from '../components/DoctorProfileCard.jsx'
+import DoctorScheduleSettings from '../components/DoctorScheduleSettings.jsx'
 import EmailVerificationBanner from '../components/EmailVerificationBanner.jsx'
 import { KpiCard, RiskPill, Panel, EmptyState } from '../components/DoctorPrimitives.jsx'
 import { LineChart } from '../components/DoctorCharts.jsx'
@@ -158,8 +159,9 @@ export default function DoctorDashboard() {
 
       {/* ---- Profile + Insights ---- */}
       <div className="mb-6 grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-4">
           <DoctorProfileCard consultationCount={completed.length} patientCount={patients.length} />
+          <DoctorScheduleSettings />
         </div>
         <Panel title="AI Clinical Insights" icon={Sparkles}>
           <ClinicalInsights patients={patients} stats={stats} pendingReports={pendingReports} loading={loadingSummaries} />
