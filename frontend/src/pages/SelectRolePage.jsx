@@ -22,6 +22,7 @@ export default function SelectRolePage() {
   const [bio, setBio] = useState('')
 
   const onSubmit = async (e) => {
+    e.preventDefault()
     if (selectedRole === ROLES.DOCTOR) {
       if (!specialization) {
         setError('Please select your specialization.')

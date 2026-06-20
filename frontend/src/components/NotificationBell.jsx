@@ -156,7 +156,7 @@ export default function NotificationBell() {
 
       {/* Dropdown Card */}
       {open && (
-        <div className="absolute right-0 mt-2 z-50 w-80 max-w-[calc(100vw-1rem)] rounded-2xl border border-border bg-surface shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 mt-2 z-50 w-80 max-md:fixed max-md:top-16 max-md:right-4 max-md:left-4 max-md:w-auto max-md:max-w-none rounded-2xl border border-border bg-surface shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border bg-surface-2 px-4 py-3">
             <span className="text-xs font-bold text-fg">Notifications</span>

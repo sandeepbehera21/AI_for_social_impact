@@ -596,11 +596,11 @@ export default function MeditationPage() {
             </div>
 
             {/* Quick sound adjustments in meditation mode */}
-            <div className="w-full card px-6 py-4 flex items-center justify-between gap-4 mt-6">
+            <div className="w-full card px-6 py-4 flex flex-col sm:flex-row items-center sm:justify-between gap-3 mt-6 text-center sm:text-left">
               <span className="text-xs text-muted flex items-center gap-1.5">
                 <Volume2 className="h-4 w-4 text-primary" /> Sound Ambiance:
               </span>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap justify-center gap-2">
                 {Object.keys(SOUND_INFO).map((key) => {
                   const s = SOUND_INFO[key]
                   const active = activeSounds[key]
