@@ -168,6 +168,20 @@ export default function VideoConsultation() {
   useEffect(() => {
     cleanupRef.current = false
 
+    // Deterministically hash alphanumeric string UID to a 32-bit unsigned integer for Agora
+    function stringToUid(str) {
+      if (!str) return 0
+      let hash = 5381
+      for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) + hash) + str.charCodeAt(i)
+        hash = hash & 0xFFFFFFFF
+      }
+      const result = hash >>> 0
+      return result === 0 ? 1 : result
+    }
+
+    const numericUid = user?.uid ? stringToUid(user.uid) : 0
+
     async function join() {
       try {
         // 1. Load appointment
@@ -182,7 +196,7 @@ export default function VideoConsultation() {
         let rtcData
         let token, app_id, uid
         try {
-          rtcData = await getRtcToken(appointmentId, { role: 'publisher' })
+          rtcData = await getRtcToken(appointmentId, { role: 'publisher', uid: numericUid })
           token = rtcData.token
           app_id = rtcData.app_id
           uid = rtcData.uid
@@ -254,7 +268,7 @@ export default function VideoConsultation() {
         client.on('token-privilege-will-expire', async () => {
           console.log('[video] token privilege will expire, renewing token...')
           try {
-            const rtcData = await getRtcToken(appointmentId, { role: 'publisher' })
+            const rtcData = await getRtcToken(appointmentId, { role: 'publisher', uid: numericUid })
             await client.renewToken(rtcData.token)
             console.log('[video] token successfully renewed')
           } catch (err) {
@@ -265,7 +279,7 @@ export default function VideoConsultation() {
         client.on('token-privilege-did-expire', async () => {
           console.log('[video] token privilege did expire, fetching fresh token and reconnecting...')
           try {
-            const rtcData = await getRtcToken(appointmentId, { role: 'publisher' })
+            const rtcData = await getRtcToken(appointmentId, { role: 'publisher', uid: numericUid })
             await client.renewToken(rtcData.token)
             console.log('[video] token successfully renewed after expiry')
           } catch (err) {
@@ -306,7 +320,7 @@ export default function VideoConsultation() {
       cleanupRef.current = true
       teardown()
     }
-  }, [appointmentId, teardown])
+  }, [appointmentId, teardown, user?.uid])
 
   // ── Play remote video whenever the user set changes ───────────────────────
   useEffect(() => {
